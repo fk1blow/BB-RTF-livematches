@@ -1,0 +1,86 @@
+<%for (var i = 0; i <this.matches.length;i++){var match=this.matches[i];%>
+<li class="TheMatch  <%=match.isLive==true?' LiveMatch ':' LiveSoon '%>  s-<%=match.disciplineId%> c-<%=match.locationId%>" itemscope="itemscope" itemtype="http://data-vocabulary.org/Event" data-matchid="<%=match.eventId%>">  
+    
+    <div class="MatchDetails">
+      <div class="MDContainer MDxContainer">
+    <span class="BookieNo">
+          <span class="TotalBookies"><%=match.providers%></span>
+        </span>
+      <a class="MDLink MatchLink MDxMatchLink" href="/<%=match.link%>/<%=match.betTypeLink%>/<%=match.scopeLink%>" title="<%=match.seeMatchNow%>" itemprop="url">
+      <span itemprop="summary" class="MDxEventName"><%=match.name%></span>
+      <%if (match.score!=null && match.score!==''){%>
+        <span class="Score"> <%=match.score%> </span>
+      <%}else{%>
+        <span class="Score LiveStatus">
+        <%=match.isLive==true? (match.tc_live+'!'):''%> 
+        </span>
+      <%}%>
+      <%if (match.passedTime!=null && match.passedTime!==''){%>
+        <span class="Timing"><span class="DateTime" itemprop="startDate"><%=match.startTime%> </span>
+          <%=match.passedTime%>
+        </span>
+      <%}else{%>
+        <span class="Setting DateTime" itemprop="startDate"><%=match.startTime%></span>
+      <%}%>
+      </a>
+            
+  </div>
+  
+  <div class="MDxInfo">
+    <%if (match.payout!=null && match.payout!=''){%>
+      <span class="ShowingPayout"><%=match.payout%></span>
+    <%}%>
+    <span class="ShowingBetType"><%=match.betTypeName%>
+    <%if (match.defaultScope===false){%>
+    , <%=match.scopeName%>
+    <%}%>
+    <%if (match.hasGroup===true && match.groupParam!='' ){%>
+    , <%=match.groupParam%>
+    <%}%>
+    </span>
+    <span class="hidden"><%=match.matchOf%></span>
+    <a class="MDLink SportLink" href="/<%=match.disciplineNameLink%>/" title="<%=match.seeSportBettingOdds%>" itemprop="eventType">
+      <span class="SportIcon"><%=match.disciplineName%></span>
+    </a>
+    <span class="hidden"><%=match.from%></span>
+    <a class="MDLink RegionLink" href="/<%=match.disciplineNameLink%>/<%=match.locationNameLink%>/" title="<%=match.seeSportCompetitionTitle%>">
+      <span class="Flag" itemprop="location"><%=match.locationName%></span>
+    </a>
+    <span class="hidden"></span>
+    <a class="MDLink TourLink" href="/<%=match.tournamentNameLink%>" title="<%=match.seeAllMatches%>">
+      <span class="Tour"><%=match.tournamentName%></span>
+    </a>
+    <span class="hidden"><%=match.showingBetType%></span>
+    <%if (typeof showBetRadarEv !== 'undefined' && showBetRadarEv === true && match.brEvent === true){%>
+      <span class="Signal_BR" title="Match covered via BetRadar">BR</span>
+    <%}%>
+    <%if (typeof showEnetPulseEv !== 'undefined' && showBetRadarEv === true && match.epEvent === true){%>
+      <span class="Signal_EP" title="Match covered via EnetPulse">EP</span>
+    <%}%>
+    </div>
+
+  </div>
+    
+    <ol class="OddsList ThreeWay">
+      <%for (var j=0; j<match.outcomes.length;j++){var outcomeNr=j;var outcome=match.outcomes[j];%>
+       <%if (j==1 && match.outcomes.length==2) { %>
+        <li class="Outcome <%=match.hasGroup?'':'EmptyCell'%>" id="Outcome<%=i%><%=outcomeNr%>">
+        <%if (match.hasGroup==true){%>
+          <span class="Param"><%=match.groupParam%></span>
+        <%}else{%>
+          &nbsp;
+        <%}%>
+        </li>
+       <%outcomeNr=3; }%>
+        <li class="Outcome" id="Outcome<%=i%><%=outcomeNr%>">
+          <a rel="external nofollow" target="<%=outcome.target%>" 
+          href="<%=outcome.href%>" 
+          title="<%=outcome.outcomeBestOdds%>" class="Bet" id="<%=outcome.outcomeId%>"><span class="Odds"><%=outcome.odds%></span>
+          <span class="OutcomeName"><%=outcome.name%></span><span class="BookmakerMatchListing  PP-<%=outcome.providerId%>">
+          <span class="BL OTLogo">Bookmaker:</span><span class="BM OTBookie"><%=outcome.providerName%></span></span></a>
+        </li>
+      <%}%>
+    </ol>
+    <div class="MatchNextInfo" style="display:none;">&nbsp;</div>
+    </li>
+<%}%>
