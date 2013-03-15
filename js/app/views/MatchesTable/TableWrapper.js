@@ -35,8 +35,7 @@ var RowItem = Backbone.View.extend({
    */
 
   render: function(data) {
-    var tplRender = com.betbrain.nextLiveMatches[this._templateSuffix];
-    var content = tplRender({ match: data });
+    var content = this._getTemplateContent(data);
     this.$el.html(content);
     this.setElement(content, true);
     this.buildChildViews();
@@ -59,6 +58,11 @@ var RowItem = Backbone.View.extend({
   /*
     Private
    */
+  
+  _getTemplateContent: function(data) {
+    var tplRender = com.betbrain.nextLiveMatches[this._templateSuffix];
+    return tplRender({ match: data });
+  },
   
   _buildMatchesDetailsView: function() {
     var view = new MatchesCell({ el: this.$el.find('div.MatchDetails') });
