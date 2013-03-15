@@ -4,6 +4,7 @@ requirejs.config({
     "lib": "lib",
     "app": "app",
     "views": "app/views",
+    "controllers": "app/controllers",
     "templates": "app/templates",
 
     "console": "http://10.0.3.98:82/SKeeM/js/lib/console-wrapper",

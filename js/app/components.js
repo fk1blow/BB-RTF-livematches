@@ -21,38 +21,57 @@ Component.ui = {};
 
 
 Component.ui.TableView = Backbone.View.extend({
-  _rowSelector: 'li',
-
+  /**
+   * Collection of row item view instances
+   * @type {Object}
+   */
   _rowViews: null,
 
-  _adapter: null,
+  /**
+   * Selector used to query dom, for each row of the table view
+   * @type {String}
+   */
+  rowSelector: '>li',
 
-  addRowAt: function(index) {},
+  getRowById: function(id) {
+    return this._rowViews[id];
+  },
 
-  removeRowAt: function(index) {},
+  addRow: function(id, view) {
+    var list = this._rowViews;
+    if ( id in list ) {
+      throw new Error('TableView.addRow :: view with id '
+        + id + ' already added');
+    }
+    list[id] = view;
+  },
 
-  getRowAt: function(index) {},
+  removeRow: function(rowView) {
+    //
+  },
 
-  prerender: function(content) {},
+  removeRowById: function(id) {
+    var row = null;
+    if ( row = this._rowViews[id] ) {
+      delete this._rowViews[id];
+      row.remove();
+      row = null;
+    }
+  },
 
   eachRow: function(cb, ctx) {
-    var $rows = this.$el.find(this._rowSelector);
+    var $rows = this.$el.find(this.rowSelector);
     var that = this, elem = null;
     $rows.each(function() {
       elem = $(this);
       cb.call(ctx || that, elem);
     });
-  },
+  }
+});
 
-  // TBD
-  /*renderEachRowItem: function() {
-    var adapter = this.getAdapter();
-    var view = null;
 
-    adapter.eachItem(function(item) {
-      view = this.getView(item);
-    });
-  },*/
+Component.ui.AdapterView = Backbone.View.extend({
+  _adapter: null,
 
   getAdapter: function() {
     return this._adapter;
@@ -73,7 +92,7 @@ Component.ui.TableView = Backbone.View.extend({
 Component.data = {};
 
 
-Component.data.AbstractAdapter = SKMObject.extend({
+Component.data.Adapter = SKMObject.extend({
   _dataSource: null,
 
   _viewItems: null,

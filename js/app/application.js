@@ -2,26 +2,15 @@
 // Application
 
 define(['app/components',
-  'app/MatchesTableAdapter',
-  'views/MatchesTableViews'],
-  function(component, MatchesTableAdapter, tableViews)
+  'controllers/MatchesTableViewController'],
+  function(component, MatchesTableViewController)
 {
 'use strict';
 
 
-// table adapter
-var matchesAdapter = MatchesTableAdapter.create();
-matchesAdapter.setDataSource(rtfMatchesJSON.matches);
+var matchesTableController = MatchesTableViewController.create();
 
-
-// matches table view
-var matchesTableView = window.matchesTableView = new tableViews.ContainerView({
-  el: $('#NextLiveMatchesRTF')
-});
-matchesTableView.setAdapter(matchesAdapter);
-matchesTableView.prerender(new EJS({url: 'js/app/templates/nextLiveMatches.ejs'}), rtfMatchesJSON );
-matchesTableView.wrapRenderedContent();
-
+window.matchesTableController = matchesTableController;
 
 
 });
