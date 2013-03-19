@@ -2,24 +2,30 @@
 // RowItemView
 
 define(['app/components',
-  'views/MatchesTable/MatchesCell',
-  'views/MatchesTable/BetCell'],
-  function(component, MatchesCell, BetCell)
+  'views/MatchesTable/EventDetailsView',
+  'models/EventDetailsModel',
+  /*'views/MatchesTable/BetCell'*/],
+  function(component, DetailsCell, EventDetailsModel)
 {
 'use strict';
 
 
 var RowItem = Backbone.View.extend({
-  _matchDetailsView: null,
+  _eventDetailsView: null,
 
   _betCellsViews: null,
 
   _templateSuffix: 'match',
 
+  eventDetailsModel: null,
+
   initialize: function() {
     cl('%cnew RowItem', 'color:#A2A2A2');
-    this._matchDetailsView = null;
+    this._eventDetailsView = null;
     this._betCellsViews = [];
+    // Aici se creaza si legatura dintr modelul de date si providerul de date
+    // Providerul poate fi RTF sau un json static
+    this.eventDetailsModel = new EventDetailsModel(this.options.modelJSON);
   },
 
   /*
@@ -43,7 +49,7 @@ var RowItem = Backbone.View.extend({
 
   buildChildViews: function() {
     this._buildMatchesDetailsView();
-    this._buildBetCellsViews();
+    // this._buildBetCellsViews();
     return this;
   },
 
@@ -65,8 +71,12 @@ var RowItem = Backbone.View.extend({
   },
   
   _buildMatchesDetailsView: function() {
-    var view = new MatchesCell({ el: this.$el.find('div.MatchDetails') });
-    this._matchDetailsView = view;
+    var view = new DetailsCell({
+      el: this.$el.find('div.MatchDetails'),
+      model: this.eventDetailsModel
+    });
+    view.on('isLive', this._changedMatchToLive, this);
+    this._eventDetailsView = view;
   },
 
   _buildBetCellsViews: function() {
@@ -78,45 +88,14 @@ var RowItem = Backbone.View.extend({
       that._betCellsViews.push(cellView);
     });
   },
-});
 
-
-var MatchesTable = component.ui.TableView.extend({
-  el: $('#NextLiveMatchesRTF'),
-
-  rowSelector: 'li.TheMatch',
-
-  initialize: function() {
-    cl('%cnew MatchesTable', 'color:#A2A2A2');
-    this._rowViews = {};
-  },
-  
-  wrapEachRowWithSubviews: function() {
-    var that = this, view = null;
-    this.eachRow(function(elem) {
-      view = new RowItem({ el: elem });
-      view.buildChildViews();
-      this.addRow(elem.attr('data-matchid'), view);
-    });
-    view = null;
-  },
-
-  createNewRow: function(rowId) {
-    var view = new RowItem();
-    this.addRow(rowId, view);
-    return view;
-  },
-
-  appendRow: function(rowView) {
-    this.$el.append(rowView.el);
+  _changedMatchToLive: function() {
+    this.$el.removeClass('LiveSoon').addClass('LiveMatch');
   }
 });
 
 
-return {
-  RowItemView: RowItem,
-  MatchesTable: MatchesTable
-}
+return RowItem;
 
 
 });

@@ -1,50 +1,58 @@
   
 // Match Table ViewController implementation
 
-define(['app/components', 'skm/k/Object', 'views/MatchesTable/TableWrapper'],
-  function(component, SKMObject, matchesTableViews)
+define(['skm/k/Object',
+  'skm/util/Subscribable',
+  'views/MatchesTable/WrapperView'],
+  function(SKMObject, Subscribable, Wrapper)
 {
 'use strict';
 
 
+var VirtualRTF = SKMObject.extend(Subscribable, {
+  fields: {
+    name: '',
+    isLive: false,
+    epEvent: false,
+    score: ''
+  },
+
+  setField: function(eventId, field, value) {
+    this.fields[field] = value;
+    var changes = {};
+    changes[field] = value;
+    this.fire('changed:field', eventId, changes);
+  }
+});
+
+window.vrtf = VirtualRTF.create();
+
+
+
+var tplhtml = com.betbrain.nextLiveMatches.matchesList(jsonMatches);
+$('#NextLiveMatchesRTF').html(tplhtml);
+
+
+
+
+
+
 var MatchTableController = SKMObject.extend({
-  _matchesTableView: null,
+  _wrapperView: null,
 
   initialize: function() {
-    this._matchesTableView = new matchesTableViews.MatchesTable();
-    this._matchesTableView.wrapEachRowWithSubviews();
-  },
-
-
-
-
-
-  updateMatchRow: function(matchData) {
-    // var eventId = matchData['eventId'];
-    // var rowView = this._matchesTableView.getRowById(eventId);
+    this._wrapperView = new Wrapper();
+    this._wrapperView.wrapViewFromInitialDump(jsonMatches.matches);
     
-    // rowView.refresh(matchData);
+    // Add bindings to the virtual rtf object
+    window.vrtf.on('changed:field', this.handleEventDetailsChanged, this);
   },
 
-  createMatchRow: function(matchData) {
-    var eventId = matchData['eventId'];
-    var rowView = this._matchesTableView.createNewRow(eventId);
-    rowView.render(matchData);
-    this._matchesTableView.appendRow(rowView);
+  handleEventDetailsChanged: function(eventId, changes) {
+    cl('%chandleEventDetailsChanged', 'color:green;', eventId, changes);
+    var row = this._wrapperView.getRowById(eventId);
+    row.eventDetailsModel.set(changes);
   },
-
-
-
-
-
-  removeMatchRow: function(matchId) {
-    this._matchesTableView.removeRowById(matchId);
-  },
-
-  removeBetCell: function(matchId, cellIndex) {
-    var rowView = this._matchesTableView.getRowById(matchId);
-    rowView.removeBetCell(cellIndex);
-  }
 });
 
 

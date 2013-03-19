@@ -1,8 +1,7 @@
   
 // Components
 
-define(['skm/k/Object',
-  'underscore'],
+define(['skm/k/Object'],
   function(SKMObject)
 {
 'use strict';

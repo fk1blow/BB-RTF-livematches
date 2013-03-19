@@ -10,6 +10,7 @@ define(['app/components',
 
 var matchesTableController = MatchesTableViewController.create();
 
+
 window.matchesTableController = matchesTableController;
 
 
