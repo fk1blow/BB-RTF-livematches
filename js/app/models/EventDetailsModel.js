@@ -1,7 +1,7 @@
   
 // Event Details model
 
-define([], function() {
+define(['models/OutcomeCellModel'], function(OutcomeModel) {
 'use strict';
 
 
@@ -46,8 +46,21 @@ var EventDetailsModel = Backbone.Model.extend({
     defaultScope: true,
   },
 
+  idAttribute: 'eventId',
+
+  outcomesModels: null,
+
   initialize: function() {
     cl('%cnew EventDetailsModel', 'color:#A2A2A2');
+    this._buildOutcomeCellModel();
+  },
+
+  getOutcomeModelByIndex: function(index) {
+    return this.outcomesModels[index];
+  },
+
+  destroy: function() {
+    this.outcomesModels.splice(0);
   },
 
   getTimeAttributes: function() {
@@ -90,6 +103,17 @@ var EventDetailsModel = Backbone.Model.extend({
         return true;
     }
     return false
+  },
+
+  _buildOutcomeCellModel: function() {
+    var outcomes = this.attributes.outcomes;
+    var i = 0, item, model, len = outcomes.length;
+    this.outcomesModels = [];
+    for (; i < len; i++ ) {
+      item = outcomes[i];
+      model = new OutcomeModel(item);
+      this.outcomesModels.push(model);
+    }
   }
 });
 

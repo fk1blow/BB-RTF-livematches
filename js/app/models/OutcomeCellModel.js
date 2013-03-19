@@ -7,7 +7,11 @@ define([], function(){
 		 * @type {[JSON]}
 		 */
 		match: null,
-	} );
+
+    initialize: function() {
+      cl('%cnew OutcomeCellModel', 'color:#A2A2A2');
+    }
+	});
 
 	return OutcomeCellModel; 
 });

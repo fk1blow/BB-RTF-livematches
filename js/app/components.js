@@ -43,6 +43,7 @@ Component.ui.TableView = Backbone.View.extend({
         + id + ' already added');
     }
     list[id] = view;
+    return this;
   },
 
   removeRow: function(rowView) {
@@ -53,7 +54,7 @@ Component.ui.TableView = Backbone.View.extend({
     var row = null;
     if ( row = this._rowViews[id] ) {
       delete this._rowViews[id];
-      row.remove();
+      row.off().remove();
       row = null;
     }
   },

@@ -20,7 +20,7 @@ var Wrapper = component.ui.TableView.extend({
     this._rowViews = {};
   },
 
-  wrapViewFromInitialDump: function(matchesJson) {
+  /*wrapViewFromInitialDump: function(matchesJson) {
     var that = this, len = matchesJson.length, i = 0;
     var view = null, evId, item;
 
@@ -34,9 +34,9 @@ var Wrapper = component.ui.TableView.extend({
       view.buildChildViews();
       this.addRow(evId, view);
     }
-  },
+  },*/
   
-  wrapEachRowWithSubviews: function() {
+  /*wrapEachRowWithSubviews: function() {
     var that = this, view = null;
     this.eachRow(function(elem) {
       view = new RowItem({ el: elem });
@@ -44,16 +44,19 @@ var Wrapper = component.ui.TableView.extend({
       this.addRow(elem.attr('data-matchid'), view);
     });
     view = null;
+  },*/
+
+  appendRow: function(view) {
+    this.$el.append(view.$el);
   },
 
-  createNewRow: function(rowId) {
-    var view = new RowItem();
-    this.addRow(rowId, view);
-    return view;
+  getNewRow: function(options) {
+    return new RowItem(options || {});
   },
 
-  appendRow: function(rowView) {
-    this.$el.append(rowView.el);
+  getNewRowByMatchId: function(id) {
+    var element = this.$el.find('li[data-matchid="' + id + '"]');
+    return this.getNewRow({ el: element });
   }
 });
 
