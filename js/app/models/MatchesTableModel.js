@@ -56,10 +56,10 @@ var MatchesTableModel = Backbone.Model.extend({
   },
   
   /**
-   * Creates the provided matches
+   * For a list (JSON) of matches, create a new EventModel instance
    *
-   * @description based on a list of matches, it iteratest
-   * over the list, creating a new instance of [EventModel]
+   * @description it iteratest over the list,
+   * creating a new instance of [EventModel]
    * and adds it to the eventsCollection
    * 
    * @param  {JSON} matchesArr json list of matches to be created
