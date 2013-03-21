@@ -21,10 +21,12 @@ var MatchTableController = SKMObject.extend({
     // Create the Event Details model collection
     this._matchesTableModel = new MatchesTableModel();
 
+    // Move this event, directly on [_wrapperView]
     // Create the view for each new created match
     this._matchesTableModel.on('created:match',
       this._handleCreatedMatch, this);
 
+    // Move this event, directly on [_wrapperView]
     // Handles a match, removed from matches talbe's event list
     this._matchesTableModel.on('removed:match',
       this._handleRemovedMatch, this);
