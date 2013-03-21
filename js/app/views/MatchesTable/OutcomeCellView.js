@@ -15,15 +15,14 @@ define( function(){
 
 		initialize: function(){
 			cl('%cnew OutcomeCellView', 'color:#A2A2A2');
-			// this.$el.html( this.createTemplate() );
 			this.model.on('change', function(){
-				this.rerender();
+				this.render();
 			}, this)
 		},
 
 		/**
 		 * Returns the compiled template with data from the model
-		 * @return {[String]} 
+		 * @return {String} 
 		 */
 		createTemplate: function(){
 			if(this.model) {
@@ -36,21 +35,14 @@ define( function(){
 
 		/**
 		 * Appends the template to the container $el property of the view
-		 * @return {[void]} 
+		 * @return {void} 
 		 */
-		rerender: function(){
-			this.$el.html( this.createTemplate() );
-			// cl('View has been rerendered');
-		},
-
-		/**
-		 * Updates the model data with attributes from the arguments
-		 * @param  {[JSON]} args [must respect the following form]  { match: { outcomes: [ {}, .. ] } }
-		 * @return {[void]}   
-		 */
-		updateModel: function(args){
-			this.model.set( $.extend(true, {}, this.model.attributes, args) );
-			// cl(this.model.changedAttributes());
+		render: function(){
+			cl('%cOutcomeCellView.rerender', 'color:green');
+			var content = this._templateMethod({ outcome: this.model.attributes });
+			var el = $(content);
+			this.$el.replaceWith(el);
+			this.setElement(el);
 		},
 
 		handleBetClick: function(evt) {
