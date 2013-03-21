@@ -1,52 +1,79 @@
-  
+ 
 // Match Table ViewController implementation
 
 define(['skm/k/Object',
   'skm/util/Subscribable',
-  'models/EventDetailsModel',
+  'models/MatchesTableModel',
   'views/MatchesTable/WrapperView'],
-  function(SKMObject, Subscribable, EventDetailsModel, Wrapper)
+  function(SKMObject, Subscribable, MatchesTableModel, Wrapper)
 {
 'use strict';
 
 
+var MatchTableController = SKMObject.extend({
+  _wrapperView: null,
 
+  _matchesTableModel: null,
 
+  initialize: function() {
+    this._wrapperView = new Wrapper();
+    
+    // Create the Event Details model collection
+    this._matchesTableModel = new MatchesTableModel();
 
-var VirtualRTF = SKMObject.extend(Subscribable, {
-  fields: {
-    name: '',
-    isLive: false,
-    epEvent: false,
-    score: ''
+    // Create the view for each new created match
+    this._matchesTableModel.on('created:match',
+      this._handleCreatedMatch, this);
+
+    // Handles a match, removed from matches talbe's event list
+    this._matchesTableModel.on('removed:match',
+      this._handleRemovedMatch, this);
   },
 
-  setField: function(eventId, field, value) {
-    this.fields[field] = value;
-    var changes = {};
-    changes[field] = value;
-    this.fire('changed:field', eventId, changes);
+  // matchesTableController.removeMatch(192711145)
+  removeMatch: function(eventId) {
+    this._matchesTableModel.removeMatch(eventId);
+  },
+
+  processMatchesListUpdates: function(updatesJson) {
+    var update = updatesJson['nextLiveMatches'];
+    this._matchesTableModel.updateMatchesList(update.matches);
+  },
+
+  processMatchesInitialDump: function(initialJson) {
+    var view, model, matchesArr = initialJson.matches;
+    _.each(matchesArr, function(matchAttrs) {
+      model = this._matchesTableModel.addMatch(matchAttrs, false);
+      
+      view = this._wrapperView.getNewRowByMatchId(model.id);
+      view.setModel(model);
+      view.buildChildViews();
+
+      this._wrapperView.addRow(model.id, view);
+      this._wrapperView.renderRow(view);
+    }, this);
+  },
+
+
+  /*
+    Private
+   */
+
+
+   _handleRemovedMatch: function(matchId) {
+    this._wrapperView.removeRowById(matchId);
+   },
+
+  _handleCreatedMatch: function(matchModel) {
+    var view = this._wrapperView.
+    view.render(matchModel.attributes);
+    this._wrapperView.addRow(matchModel.id, view);
+    this._wrapperView.renderRow(view);
   }
 });
 
-window.vrtf = VirtualRTF.create();
 
-
-var tplhtml = com.betbrain.nextLiveMatches.matchesList(jsonMatches);
-$('#NextLiveMatchesRTF').html(tplhtml);
-
-
-
-
-
-
-
-
-
-
-
-
-var MatchTableController = SKMObject.extend({
+var xxx_MatchTableController = SKMObject.extend({
   _wrapperView: null,
 
   _eventsCollection: null,
@@ -57,49 +84,45 @@ var MatchTableController = SKMObject.extend({
     // Create the Event Details model collection
     this._eventsCollection = new Backbone.Collection();
 
-    // Destroy model when remove from collection
-    this._eventsCollection.on('remove', function(model) {
-      model.destroy();
-    });
-    
     // Create the rows alongside the models
     this._prerenderFromJson(jsonMatches.matches);
-
-    // Add bindings to the virtual rtf object
-    window.vrtf.on('changed:field', this.handleEventDetailsChanged, this);
   },
 
+  // matchesTableController.addMatch(jsonMatches['matches'][1])
   addMatch: function(jsonMatch) {
     var model = new EventDetailsModel(jsonMatch);
     this._eventsCollection.add(model);
     var view = this._wrapperView.getNewRow();
-    view.setModel(model).render(jsonMatch);
-    this._wrapperView.addRow(model.id, view).appendRow(view);
+    view.setModel(model);
+    view.render(jsonMatch);
+    this._wrapperView.addRow(model.id, view);
+    // this._wrapperView.appendRowToHtml(view);
   },
 
+  // matchesTableController.removeMatch(192711145)
   removeMatch: function(eventId) {
+    this._eventsCollection.get(eventId).destroy();
     this._eventsCollection.remove(eventId);
     this._wrapperView.removeRowById(eventId);
   },
 
-  addOutcome: function() {
-    //
+  processUpdates: function(matchJson) {
+    var eventModel = this._eventsCollection.get(matchJson['eventId']);
+    if ( eventModel )
+      eventModel.set(matchJson);
   },
 
-  removeOutcome: function() {
-    //
-  },
+  /*updateOutcomesForEvent: function(jsonMatchesList) {
+    _.each(jsonMatchesList, function(item) {
+      cl(item)
+    });
+  },*/
 
-  handleEventDetailsChanged: function(eventId, changes) {
-    cl('%chandleEventDetailsChanged', 'color:green;', eventId, changes);
-    var model = this._eventsCollection.get(eventId);
 
-    cl(model)
+  /*
+    Private
+   */
 
-    model.set(changes);
-    // var row = this._wrapperView.getRowById(eventId);
-    // row.eventDetailsModel.set(changes);
-  },
 
   _prerenderFromJson: function(jsonMatches) {
     var len, i = 0, evId, model, view;
