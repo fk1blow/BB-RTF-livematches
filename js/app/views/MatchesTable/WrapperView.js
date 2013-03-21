@@ -2,7 +2,7 @@
 // RowItemView
 
 define(['app/components',
-  'views/MatchesTable/RowItemView',
+  'views/MatchesTable/EventItemView',
   /*'views/MatchesTable/MatchesCell',
   'views/MatchesTable/BetCell'*/],
   function(component, RowItem)
@@ -20,33 +20,8 @@ var Wrapper = component.ui.TableView.extend({
     this._rowViews = {};
   },
 
-  /*wrapViewFromInitialDump: function(matchesJson) {
-    var that = this, len = matchesJson.length, i = 0;
-    var view = null, evId, item;
-
-    for ( i = 0; i < len; i++ ) {
-      item = matchesJson[i];
-      evId = item['eventId'];
-      view = new RowItem({
-        el: this.$el.find('li[data-matchid="' + evId + '"]'),
-        modelJSON: item
-      });
-      view.buildChildViews();
-      this.addRow(evId, view);
-    }
-  },*/
-  
-  /*wrapEachRowWithSubviews: function() {
-    var that = this, view = null;
-    this.eachRow(function(elem) {
-      view = new RowItem({ el: elem });
-      view.buildChildViews();
-      this.addRow(elem.attr('data-matchid'), view);
-    });
-    view = null;
-  },*/
-
-  appendRow: function(view) {
+  renderRow: function(view) {
+    cl('%cWrapper.renderRow', 'color:green', view.$el);
     this.$el.append(view.$el);
   },
 
