@@ -1,10 +1,9 @@
   
 // Application
 
-define(['app/components',
-  'skm/rtf/RTFApi',
+define(['skm/rtf/RTFApi',
   'controllers/MatchesTableViewController'],
-  function(component, RTF, MatchesTableViewController)
+  function(RTF, MatchesTableViewController)
 {
 'use strict';
 
