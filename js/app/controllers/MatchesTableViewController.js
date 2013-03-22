@@ -32,15 +32,11 @@ var MatchTableController = SKMObject.extend({
       this._handleRemovedMatch, this);
   },
 
-  // matchesTableController.removeMatch(192711145)
-  removeMatch: function(eventId) {
-    this._matchesTableModel.removeMatch(eventId);
-  },
-
   processMatchesListUpdates: function(updatesJson) {
     var updateArr = updatesJson['nextLiveMatches'];
-    this._matchesTableModel.updateMatchesList(updateArr.updates);
-    this._matchesTableModel.removeMatchesList(updateArr.destroy);
+    this._matchesTableModel.updateMatchesList(updateArr['update']);
+    this._matchesTableModel.removeMatchesList(updateArr['delete']); 
+    this._matchesTableModel.createMatchesList(updateArr['create']);
   },
 
   processMatchesInitialDump: function(initialJson) {
@@ -55,6 +51,7 @@ var MatchTableController = SKMObject.extend({
 
   _handleInitialMatchesDump: function(matchesDumpJson) {
     var view, model, matchesArr = matchesDumpJson.matches;
+    
     _.each(matchesArr, function(matchAttrs) {
       model = this._matchesTableModel.addMatch(matchAttrs, false);
       
