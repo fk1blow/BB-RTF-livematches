@@ -38,13 +38,23 @@ var MatchTableController = SKMObject.extend({
   },
 
   processMatchesListUpdates: function(updatesJson) {
-    var update = updatesJson['nextLiveMatches'];
-    this._matchesTableModel.updateMatchesList(update.matches);
-    this._matchesTableModel.removeMatchesList(update.destroy);
+    var updateArr = updatesJson['nextLiveMatches'];
+    this._matchesTableModel.updateMatchesList(updateArr.updates);
+    this._matchesTableModel.removeMatchesList(updateArr.destroy);
   },
 
   processMatchesInitialDump: function(initialJson) {
-    var view, model, matchesArr = initialJson.matches;
+    this._handleInitialMatchesDump(initialJson);
+  },
+
+
+  /*
+    Private
+   */
+
+
+  _handleInitialMatchesDump: function(matchesDumpJson) {
+    var view, model, matchesArr = matchesDumpJson.matches;
     _.each(matchesArr, function(matchAttrs) {
       model = this._matchesTableModel.addMatch(matchAttrs, false);
       
@@ -57,15 +67,9 @@ var MatchTableController = SKMObject.extend({
     }, this);
   },
 
-
-  /*
-    Private
-   */
-
-
-   _handleRemovedMatch: function(matchId) {
+  _handleRemovedMatch: function(matchId) {
     this._wrapperView.removeRowById(matchId);
-   },
+  },
 
   _handleCreatedMatch: function(matchModel) {
     var view = this._wrapperView.getNewRow();
