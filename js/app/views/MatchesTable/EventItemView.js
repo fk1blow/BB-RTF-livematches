@@ -4,7 +4,7 @@
 define(['app/components',
   'views/MatchesTable/EventDetailsView',
   'views/MatchesTable/OutcomeCellView'],
-  function(component, EventDetailsCell, OutcomeCell)
+  function(component, EventDetailsView, OutcomeCell)
 {
 'use strict';
 
@@ -28,7 +28,7 @@ var EventItem = Backbone.View.extend({
   _templateSuffix: 'match',
 
   initialize: function() {
-    cl('%cnew EventItemView', 'color:#A2A2A2');
+    console.debug('%cnew EventItemView', 'color:#A2A2A2');
     this._eventDetailsView = null;
     this._betCellViews = [];
   },
@@ -38,14 +38,18 @@ var EventItem = Backbone.View.extend({
    */
 
   render: function(data) {
-    cl('%cRowItem.render', 'color:green', data);
+    console.debug('%cRowItem.render', 'color:green', data);
     var tplRender = com.betbrain.nextLiveMatches[this._templateSuffix];
     var content = tplRender({ match: data });
     this.setElement(content);
-    this.buildChildViews();
   },
 
-  buildChildViews: function() {
+  renderChildren: function() {
+    console.debug('%cEventItemView.renderChildren', 'color:green');
+    if ( ! this.model ) {
+      Logger.debug('%cEventItemView.renderChildren : no model provided'
+        + ' for this event item!');
+    }
     this._buildMatchesDetailsView();
     this._buildBetCellsViews();
     return this;
@@ -67,9 +71,10 @@ var EventItem = Backbone.View.extend({
   /*
     Private
    */
+
   
   _buildMatchesDetailsView: function() {
-    var view = new EventDetailsCell({
+    var view = new EventDetailsView({
       el: this.$el.find('div.MatchDetails'),
       model: this.model
     });
