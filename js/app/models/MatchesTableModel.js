@@ -34,7 +34,7 @@ var MatchesTableModel = Backbone.Model.extend({
     var eventItem = eventsCollection.get(id);
     eventItem.destroy();
     eventsCollection.remove(id);
-    this.trigger('removed:™', id);
+    this.trigger('removed:match', id);
   },
 
   /**
