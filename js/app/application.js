@@ -19,9 +19,11 @@ window.mtc = matchesTableController;
 
 
 
-return;
+// return;
 
-RTF.Config.setWSUrl('ws://radu.betbrain.com:8080/rtfws');
+
+
+RTF.Config.setWSUrl('ws://10.0.3.55:8080/rtfws');
 RTF.Config.setXHRUrl('http://radu.betbrain.com/rtfajax');
 
 var rtf;
