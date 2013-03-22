@@ -14,11 +14,11 @@ var MatchesTableModel = Backbone.Model.extend({
   /**
    * Adds a new event and creates its model
    * 
-   * @param {JSON} jsonMatchEvent The object representing the new
+   * @param {JSON} jsonMatchAttributes The object representing the new
    * match/event to be added
    */
-  addMatch: function(jsonMatchEvent, triggersEvent) {
-    var eventItem = new EventModel(jsonMatchEvent);
+  addMatch: function(jsonMatchAttributes, triggersEvent) {
+    var eventItem = new EventModel(jsonMatchAttributes);
     eventsCollection.add(eventItem);
     if ( triggersEvent != false )
       this.trigger('created:match', eventItem);
@@ -31,10 +31,12 @@ var MatchesTableModel = Backbone.Model.extend({
    * @param  {String} id event item/match id
    */
   removeMatch: function(id) {
-    var eventItem = eventsCollection.get(id);
-    eventItem.destroy();
-    eventsCollection.remove(id);
-    this.trigger('removed:match', id);
+    var eventItemModel = eventsCollection.get(id);
+    if ( eventItemModel ) {
+      eventItemModel.destroy();
+      eventsCollection.remove(id);
+      this.trigger('removed:match', id);
+    }
   },
 
   /**
@@ -50,8 +52,6 @@ var MatchesTableModel = Backbone.Model.extend({
     _.each(matchesArr, function(matchAttributes) {
       if ( eventItem = eventsCollection.get(matchAttributes.eventId) )
         eventItem.set(matchAttributes);
-      else
-        this.addMatch(matchAttributes);
     }, this);
   },
   
@@ -64,12 +64,20 @@ var MatchesTableModel = Backbone.Model.extend({
    * 
    * @param  {JSON} matchesArr json list of matches to be created
    */
-  createNewMatchesList: function(matchesArr) {
-    return true;
+  createMatchesList: function(matchesArr) {
+    _.each(matchesArr, function(matchAttributes) {
+      if ( eventsCollection.get(matchAttributes.eventId) )
+        console.log('%cMatchesTableModel.createMatchesList : event with id '
+          + matchAttributes.eventId + ' already created', 'color:green');
+      else
+          this.addMatch(matchAttributes);
+    }, this);
   },
 
-  removeMatchesList: function() {
-    return true;
+  removeMatchesList: function(matchesArr) {
+    _.each(matchesArr, function(matchAttribute) {
+      this.removeMatch(matchAttribute.eventId);
+    }, this);
   }
 });
 
