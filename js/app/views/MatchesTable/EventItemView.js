@@ -38,7 +38,7 @@ var EventItem = Backbone.View.extend({
    */
 
   render: function(data) {
-    console.debug('%cRowItem.render', 'color:green', data);
+    console.debug('%cEventItemView.render', 'color:green', data);
     var tplRender = com.betbrain.nextLiveMatches[this._templateSuffix];
     var content = tplRender({ match: data });
     this.setElement(content);
@@ -51,7 +51,7 @@ var EventItem = Backbone.View.extend({
         + ' for this event item!');
     }
     this._buildMatchesDetailsView();
-    this._buildBetCellsViews();
+    this._buildOutcomeCellsViews();
     return this;
   },
 
@@ -81,10 +81,10 @@ var EventItem = Backbone.View.extend({
     this._eventDetailsView = view;
   },
 
-  _buildBetCellsViews: function() {
+  _buildOutcomeCellsViews: function() {
     var $cells = this.$el.find('.OddsList li.Outcome');
     var that = this, cellView = null, item;
-    
+
     $cells.each(function(idx) {
       item = $(this);
       cellView = new OutcomeCell({

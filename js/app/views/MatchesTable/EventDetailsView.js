@@ -69,8 +69,9 @@ var EventDetails = Backbone.View.extend({
   },
 
   handleChangedScopeName: function() {
-    var el = this.$el.find('span.ShowingBetType');
+    var el = this.$el.find('span.ShowingBetType').find('.scopeName');
     var text = '', prev = el.html();
+
     if ( this.model.get('defaultScope') ) {
       text = ', ' + this.model.get('scopeName');
     }
@@ -78,8 +79,9 @@ var EventDetails = Backbone.View.extend({
   },
 
   handleChangedGroupParam: function() {
-    var el = this.$el.find('span.ShowingBetType');
+    var el = this.$el.find('span.ShowingBetType').find('.groupParam');
     var groupParam = '', text = '', prev = el.html();
+
     if ( this.model.get('hasGroup')
          && (groupParam = this.model.get('groupParam')) )
     {
@@ -120,9 +122,11 @@ var EventDetails = Backbone.View.extend({
 
   handleChangedPayout: function() {
     var $container = null;
+
     if ( this.model.get('betTypePayout') === true ) {
       $container = this.$el.find('div.MDxInfo');
       $container.find('.ShowingPayout').remove();
+
       var tpl = com.betbrain.nextLiveMatches.matchPayout({
         match: { payout: this.model.get('payout') }
       });
