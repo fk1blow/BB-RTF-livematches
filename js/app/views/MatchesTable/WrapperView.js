@@ -5,7 +5,7 @@ define(['app/components',
   'views/MatchesTable/EventItemView',
   /*'views/MatchesTable/MatchesCell',
   'views/MatchesTable/BetCell'*/],
-  function(component, RowItem)
+  function(component, EventItemView)
 {
 'use strict';
 
@@ -26,7 +26,7 @@ var Wrapper = component.ui.TableView.extend({
   },
 
   getNewRow: function(options) {
-    return new RowItem(options || {});
+    return new EventItemView(options || {});
   },
 
   getNewRowByMatchId: function(id) {
