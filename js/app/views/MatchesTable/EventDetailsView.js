@@ -7,7 +7,7 @@ define([], function() {
 
 var EventDetails = Backbone.View.extend({
   initialize: function() {
-    cl('%cnew EventDetails', 'color:#A2A2A2');
+    console.log('%cnew EventDetails', 'color:#A2A2A2');
 
     this.model.on('change:tournamentName',
       this.handleChangedTournamentName, this);

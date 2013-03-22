@@ -11,12 +11,12 @@ var BetCell = Backbone.View.extend({
   },
 
   initialize: function() {
-    cl('%cnew BetCell', 'color:#A2A2A2', this.$el);
+    console.log('%cnew BetCell', 'color:#A2A2A2', this.$el);
   },
 
   handleCellClick: function(evt) {
     evt.preventDefault();
-    cl('BetCell.handleCellClick : ', $(evt.currentTarget));
+    console.log('BetCell.handleCellClick : ', $(evt.currentTarget));
   }
 });
 

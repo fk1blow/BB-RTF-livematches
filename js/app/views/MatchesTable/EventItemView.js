@@ -17,7 +17,7 @@ var EventItem = Backbone.View.extend({
   events: {
     'click .MDContainer.MDxContainer': function(evt) {
       evt.preventDefault();
-      cl('test clicks on new rows')
+      console.log('test clicks on new rows')
     }
   },
 
@@ -28,7 +28,7 @@ var EventItem = Backbone.View.extend({
   _templateSuffix: 'match',
 
   initialize: function() {
-    console.debug('%cnew EventItemView', 'color:#A2A2A2');
+    console.log('%cnew EventItemView', 'color:#A2A2A2');
     this._eventDetailsView = null;
     this._betCellViews = [];
   },
@@ -38,16 +38,16 @@ var EventItem = Backbone.View.extend({
    */
 
   render: function(data) {
-    console.debug('%cEventItemView.render', 'color:green', data);
+    console.log('%cEventItemView.render', 'color:green', data);
     var tplRender = com.betbrain.nextLiveMatches[this._templateSuffix];
     var content = tplRender({ match: data });
     this.setElement(content);
   },
 
   renderChildren: function() {
-    console.debug('%cEventItemView.renderChildren', 'color:green');
+    console.log('%cEventItemView.renderChildren', 'color:green');
     if ( ! this.model ) {
-      Logger.debug('%cEventItemView.renderChildren : no model provided'
+      console.log('%cEventItemView.renderChildren : no model provided'
         + ' for this event item!');
     }
     this._buildMatchesDetailsView();

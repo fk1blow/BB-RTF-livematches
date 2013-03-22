@@ -14,7 +14,7 @@ define( function(){
 		_templateMethod: window.com.betbrain.nextLiveMatches.outcome,
 
 		initialize: function(){
-			cl('%cnew OutcomeCellView', 'color:#A2A2A2');
+			console.log('%cnew OutcomeCellView', 'color:#A2A2A2');
 			this.model.on('change', function(){
 				this.render();
 			}, this)
@@ -38,7 +38,7 @@ define( function(){
 		 * @return {void} 
 		 */
 		render: function(){
-			cl('%cOutcomeCellView.rerender', 'color:green');
+			console.log('%cOutcomeCellView.rerender', 'color:green');
 			var content = this._templateMethod({ outcome: this.model.attributes });
 			var el = $(content);
 			this.$el.replaceWith(el);
@@ -47,7 +47,7 @@ define( function(){
 
 		handleBetClick: function(evt) {
 			evt.preventDefault();
-			cl('handleBetClick')
+			console.log('handleBetClick')
 		}
 	});
 

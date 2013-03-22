@@ -16,12 +16,12 @@ var Wrapper = component.ui.TableView.extend({
   rowSelector: 'li.TheMatch',
 
   initialize: function() {
-    cl('%cnew Wrapper', 'color:#A2A2A2');
+    console.log('%cnew Wrapper', 'color:#A2A2A2');
     this._rowViews = {};
   },
 
   renderRow: function(view) {
-    cl('%cWrapper.renderRow', 'color:green', view.$el);
+    console.log('%cWrapper.renderRow', 'color:green', view.$el);
     this.$el.append(view.$el);
   },
 
