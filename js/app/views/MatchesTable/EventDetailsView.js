@@ -49,7 +49,8 @@ var EventDetails = Backbone.View.extend({
   },
 
   handleChangedTournamentName: function() {
-    this.$el.find('span.Tour').html(this.model.get('tournamentName'));
+    var tournamentName = this.model.get('tournamentName');
+    this.$el.find('span.Tour').html(tournamentName);
   },
 
   handleChangeTournamentnameLink: function() {
