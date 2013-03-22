@@ -39,8 +39,8 @@ Component.ui.TableView = Backbone.View.extend({
   addRow: function(id, view) {
     var list = this._rowViews;
     if ( id in list ) {
-      throw new Error('TableView.addRow :: view with id '
-        + id + ' already added');
+      console.log('%TableView.addRow :: view with id '
+        + id + ' already added', 'color:red');
     }
     list[id] = view;
     return this;
