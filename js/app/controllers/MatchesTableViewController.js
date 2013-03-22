@@ -40,6 +40,7 @@ var MatchTableController = SKMObject.extend({
   processMatchesListUpdates: function(updatesJson) {
     var update = updatesJson['nextLiveMatches'];
     this._matchesTableModel.updateMatchesList(update.matches);
+    this._matchesTableModel.removeMatchesList(update.destroy);
   },
 
   processMatchesInitialDump: function(initialJson) {
@@ -49,7 +50,7 @@ var MatchTableController = SKMObject.extend({
       
       view = this._wrapperView.getNewRowByMatchId(model.id);
       view.setModel(model);
-      view.buildChildViews();
+      view.renderChildren();
 
       this._wrapperView.addRow(model.id, view);
       this._wrapperView.renderRow(view);
@@ -67,77 +68,13 @@ var MatchTableController = SKMObject.extend({
    },
 
   _handleCreatedMatch: function(matchModel) {
-    var view = this._wrapperView.
+    var view = this._wrapperView.getNewRow();
+    view.setModel(matchModel);
     view.render(matchModel.attributes);
+    view.renderChildren();
+    
     this._wrapperView.addRow(matchModel.id, view);
     this._wrapperView.renderRow(view);
-  }
-});
-
-
-var xxx_MatchTableController = SKMObject.extend({
-  _wrapperView: null,
-
-  _eventsCollection: null,
-
-  initialize: function() {
-    this._wrapperView = new Wrapper();
-
-    // Create the Event Details model collection
-    this._eventsCollection = new Backbone.Collection();
-
-    // Create the rows alongside the models
-    this._prerenderFromJson(jsonMatches.matches);
-  },
-
-  // matchesTableController.addMatch(jsonMatches['matches'][1])
-  addMatch: function(jsonMatch) {
-    var model = new EventDetailsModel(jsonMatch);
-    this._eventsCollection.add(model);
-    var view = this._wrapperView.getNewRow();
-    view.setModel(model);
-    view.render(jsonMatch);
-    this._wrapperView.addRow(model.id, view);
-    // this._wrapperView.appendRowToHtml(view);
-  },
-
-  // matchesTableController.removeMatch(192711145)
-  removeMatch: function(eventId) {
-    this._eventsCollection.get(eventId).destroy();
-    this._eventsCollection.remove(eventId);
-    this._wrapperView.removeRowById(eventId);
-  },
-
-  processUpdates: function(matchJson) {
-    var eventModel = this._eventsCollection.get(matchJson['eventId']);
-    if ( eventModel )
-      eventModel.set(matchJson);
-  },
-
-  /*updateOutcomesForEvent: function(jsonMatchesList) {
-    _.each(jsonMatchesList, function(item) {
-      cl(item)
-    });
-  },*/
-
-
-  /*
-    Private
-   */
-
-
-  _prerenderFromJson: function(jsonMatches) {
-    var len, i = 0, evId, model, view;
-    _.each(jsonMatches, function(item) {
-      model = new EventDetailsModel(item);
-      // Add model to the events model collection
-      this._eventsCollection.add(model);
-      // Create the View and add its model
-      view = this._wrapperView.getNewRowByMatchId(item['eventId']);
-      view.setModel(model).buildChildViews();
-      // Add it to the WrapperView instance
-      this._wrapperView.addRow(item['eventId'], view);
-    }, this);
   }
 });
 
