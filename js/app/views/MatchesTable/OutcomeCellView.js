@@ -6,13 +6,6 @@ define( function(){
 			'click a.Bet': 'handleBetClick'
 		},
 
-		/**
-		 * Google Closure Template Object
-		 * Use the predefined methods to render the template
-		 * @type {[Object]}
-		 */
-		_templateMethod: window.com.betbrain.nextLiveMatches.outcome,
-
 		initialize: function(){
 			console.log('%cnew OutcomeCellView', 'color:#A2A2A2');
 			this.model.on('change', function(){
@@ -48,7 +41,16 @@ define( function(){
 		handleBetClick: function(evt) {
 			evt.preventDefault();
 			console.log('handleBetClick')
-		}
+		},
+
+		/**
+		 * Google Closure Template Object
+		 * Use the predefined methods to render the template
+		 * @type {[Object]}
+		 */
+		_templateMethod: function() {
+			return window.com.betbrain.nextLiveMatches.outcome
+		},
 	});
 
 	return OutcomeCellView;
