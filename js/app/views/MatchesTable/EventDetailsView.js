@@ -56,7 +56,8 @@ var EventDetails = Backbone.View.extend({
   handleChangeTournamentnameLink: function() {
     var link = this.model.get('tournamentNameLink');
     var title = this.model.get('seeAllMatches');
-    this.$el.find('.MDLink.TourLink')
+    var el = this.$el.find('.MDLink.TourLink');
+    el.attr('href', link).attr('title', title);
   },
 
   handleChangedLocationName: function() {
