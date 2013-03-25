@@ -14,13 +14,4 @@ requirejs.config({
 });
 
 
-// could transform to
-// require(['app/application'])
-// require(['console'], function() {
-// require(['console'], function() {
-//   var application = require(['app/application']);
-//   console.log('Required :: main.js');
-// });
-
-
 require(['app/application', 'console']);
