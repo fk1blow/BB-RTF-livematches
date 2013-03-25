@@ -22,14 +22,17 @@ window.mtc = matchesTableController;
 
 
 
-RTF.Config.setWSUrl('ws://10.0.3.55:8080/rtfws');
-RTF.Config.setXHRUrl('http://radu.betbrain.com/rtfajax');
+RTF.Config.setWSUrl('ws://radu.betonvalue.com:8080/rtfws');
+RTF.Config.setXHRUrl('http://radu.betonvalue.com/rtfajax');
+
+RTF.Config.setSequence(['WebSocket', 'XHR'].reverse());
 
 var rtf;
 window.RTFApi = rtf = RTF.Api.get();
 
 rtf.setClientId((new Date).getTime());
 rtf.addSubscription('nextLiveMatches');
+rtf.addSubscription('anotherSub');
 rtf.startUpdates();
 
 rtf.getSubscription('nextLiveMatches').on('update', function(update) {
@@ -37,7 +40,6 @@ rtf.getSubscription('nextLiveMatches').on('update', function(update) {
   _.each(updatesArray, function(matchesUpdatesItem) {
     matchesTableController.processMatchesListUpdates(matchesUpdatesItem);
   });
-  
 });
 
 
