@@ -76,7 +76,7 @@ com.betbrain.nextLiveMatches.match = function(opt_data, opt_ignored) {
 
 com.betbrain.nextLiveMatches.matchesList = function(opt_data, opt_ignored) {
   var output = '\t';
-  var matchList187 = opt_data.create;
+  var matchList187 = opt_data.matches;
   var matchListLen187 = matchList187.length;
   for (var matchIndex187 = 0; matchIndex187 < matchListLen187; matchIndex187++) {
     var matchData187 = matchList187[matchIndex187];

@@ -8,6 +8,8 @@ define(['skm/rtf/RTFApi',
 'use strict';
 
 
+
+
 var tplhtml = com.betbrain.nextLiveMatches.matchesList(jsonMatches);
 $('#NextLiveMatchesRTF').html(tplhtml);
 
@@ -25,15 +27,18 @@ window.mtc = matchesTableController;
 RTF.Config.setWSUrl('ws://radu.betonvalue.com:8080/rtfws');
 RTF.Config.setXHRUrl('http://radu.betonvalue.com/rtfajax');
 
-RTF.Config.setSequence(['WebSocket', 'XHR'].reverse());
+RTF.Config.setSequence(['WebSocket', 'XHR']);
 
 var rtf;
 window.RTFApi = rtf = RTF.Api.get();
 
 rtf.setClientId((new Date).getTime());
 rtf.addSubscription('nextLiveMatches');
-rtf.addSubscription('anotherSub');
+// rtf.addSubscription('anotherSub');
+
+
 rtf.startUpdates();
+
 
 rtf.getSubscription('nextLiveMatches').on('update', function(update) {
   var updatesArray = update['message'];

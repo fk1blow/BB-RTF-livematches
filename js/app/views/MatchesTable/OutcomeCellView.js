@@ -6,6 +6,13 @@ define( function(){
 			'click a.Bet': 'handleBetClick'
 		},
 
+		/**
+		 * Google Closure Template Object
+		 * Use the predefined methods to render the template
+		 * @type {[Object]}
+		 */
+		_templateMethod:  window.com.betbrain.nextLiveMatches.outcome,
+
 		initialize: function(){
 			console.log('%cnew OutcomeCellView', 'color:#A2A2A2');
 			this.model.on('change', function(){
@@ -32,7 +39,7 @@ define( function(){
 		 */
 		render: function(){
 			console.log('%cOutcomeCellView.rerender', 'color:green');
-			var content = this._templateMethod({ outcome: this.model.attributes });
+			var content = this._templateMethod({ 'outcome': this.model.attributes });
 			var el = $(content);
 			this.$el.replaceWith(el);
 			this.setElement(el);
@@ -41,16 +48,7 @@ define( function(){
 		handleBetClick: function(evt) {
 			evt.preventDefault();
 			console.log('handleBetClick')
-		},
-
-		/**
-		 * Google Closure Template Object
-		 * Use the predefined methods to render the template
-		 * @type {[Object]}
-		 */
-		_templateMethod: function() {
-			return window.com.betbrain.nextLiveMatches.outcome
-		},
+		}
 	});
 
 	return OutcomeCellView;
