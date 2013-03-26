@@ -115,8 +115,6 @@ var EventItemModel = Backbone.Model.extend({
   _updateOutcomesModels: function() {
     var outcomesModelsArr = this.outcomesModels;
     var outcomesUpdatesList = this.get('outcomes');
-
-    // cl('update outcomes', outcomesUpdatesList)
     
     if ( outcomesModelsArr.length ) {
       _.each(outcomesUpdatesList, function(outcome, idx) {
