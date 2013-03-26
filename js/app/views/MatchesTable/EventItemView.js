@@ -28,7 +28,7 @@ var EventItem = Backbone.View.extend({
   _templateSuffix: 'match',
 
   initialize: function() {
-    console.log('%cnew EventItemView', 'color:#A2A2A2');
+    // console.log('%cnew EventItemView', 'color:#A2A2A2');
     this._eventDetailsView = null;
     this._betCellViews = [];
   },

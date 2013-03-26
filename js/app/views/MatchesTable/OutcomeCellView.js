@@ -14,7 +14,7 @@ define( function(){
 		_templateMethod:  window.com.betbrain.nextLiveMatches.outcome,
 
 		initialize: function(){
-			console.log('%cnew OutcomeCellView', 'color:#A2A2A2');
+			// console.log('%cnew OutcomeCellView', 'color:#A2A2A2');
 			this.model.on('change', function(){
 				this.render();
 			}, this)
