@@ -34,9 +34,14 @@ var MatchTableController = SKMObject.extend({
 
   processMatchesListUpdates: function(updatesJson) {
     var updateArr = updatesJson['nextLiveMatches'];
-    this._matchesTableModel.updateMatchesList(updateArr['update']);
-    this._matchesTableModel.removeMatchesList(updateArr['delete']); 
-    this._matchesTableModel.createMatchesList(updateArr['create']);
+    var createItems, updateItems, deleteItems;
+    
+    if ( createItems = updateArr['create'] )
+      this._matchesTableModel.createMatchesList(createItems);
+    if ( updateItems = updateArr['update'] )
+      this._matchesTableModel.updateMatchesList(updateItems);
+    if ( deleteItems = updateArr['delete'] )
+      this._matchesTableModel.removeMatchesList(deleteItems);
   },
 
   processMatchesInitialDump: function(initialJson) {
@@ -69,13 +74,14 @@ var MatchTableController = SKMObject.extend({
   },
 
   _handleCreatedMatch: function(matchModel) {
+
     var view = this._wrapperView.getNewRow();
     view.setModel(matchModel);
     view.render(matchModel.attributes);
     view.renderChildren();
     
     this._wrapperView.addRow(matchModel.id, view);
-    this._wrapperView.renderRow(view);
+    this._wrapperView.renderRow(view, matchModel.index);
   }
 });
 
