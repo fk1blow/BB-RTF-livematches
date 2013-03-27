@@ -74,6 +74,13 @@ var MatchesTableModel = Backbone.Model.extend({
     }, this);
   },
 
+  /**
+   * Removes a list of matches - EventModel instances
+   *
+   * @description based on a JSON of events - event id's - iterate
+   * over each item and call [removeMatch]
+   * @param  {JSON} matchesArr the list of matches to be destroyed
+   */
   removeMatchesList: function(matchesArr) {
     _.each(matchesArr, function(matchAttribute) {
       this.removeMatch(matchAttribute.eventId);
