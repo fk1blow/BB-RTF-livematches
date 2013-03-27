@@ -14,6 +14,8 @@ var tplhtml = com.betbrain.nextLiveMatches.matchesList(jsonMatches);
 $('#NextLiveMatchesRTF').html(tplhtml);
 
 
+
+
 var matchesTableController = MatchesTableViewController.create();
 matchesTableController.processMatchesInitialDump(jsonMatches);
 window.mtc = matchesTableController;
@@ -33,19 +35,19 @@ var rtf;
 window.RTFApi = rtf = RTF.Api.get();
 
 rtf.setClientId((new Date).getTime());
-rtf.addSubscription('nextLiveMatches');
+
 // rtf.addSubscription('anotherSub');
 
-
-rtf.startUpdates();
-
-
-rtf.getSubscription('nextLiveMatches').on('update', function(update) {
+rtf.addSubscription('nextLiveMatches').on('update', function(update) {
   var updatesArray = update['message'];
   _.each(updatesArray, function(matchesUpdatesItem) {
     matchesTableController.processMatchesListUpdates(matchesUpdatesItem);
   });
 });
+
+
+rtf.startUpdates();
+
 
 
 });
