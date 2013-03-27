@@ -1,3 +1,6 @@
+
+// Outcome Cell view
+
 define( function(){
 	'use strict';
 
