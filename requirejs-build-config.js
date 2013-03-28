@@ -18,7 +18,7 @@
 
   // START Single file build
 
-  out: 'cacabuild.js',
+  out: 'nextLiveMatchesBuild.js',
 
   include: ['main'],
 

@@ -26,15 +26,16 @@ window.mtc = matchesTableController;
 
 
 
-RTF.Config.setWSUrl('ws://radu.betonvalue.com:8080/rtfws');
-RTF.Config.setXHRUrl('http://radu.betonvalue.com/rtfajax');
+RTF.Config.urls.ws = 'ws://stage.betonvalue.com/rtfws';
+RTF.Config.urls.xhr = 'http://radu.betonvalue.com/rtfajax';
+RTF.Config.wsReconnectAttempts = 5;
+RTF.Config.sequence = ['WebSocket', 'XHR'];
 
-RTF.Config.setSequence(['WebSocket', 'XHR']);
 
-var rtf;
-window.RTFApi = rtf = RTF.Api.get();
+var rtf = window.RTFApi = RTF.Api.get();
 
-rtf.setClientId((new Date).getTime());
+rtf.addUrlParameter('clientId', (new Date).getTime());
+rtf.addUrlParameter('jSessionId', 'E75959D079E502C82BC26993C11A37E1.tomcat2');
 
 // rtf.addSubscription('anotherSub');
 
