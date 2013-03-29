@@ -18,6 +18,16 @@
     <link rel="icon" href="http://gfxnew.betonvalue.com/favicon-48-bov.png" sizes="48x48"/>
     <link rel="shortcut icon" href="http://gfxnew.betonvalue.com/favicon-bov.ico" />
     <link rel="stylesheet" type="text/css" href="http://betbrain.com/new/css/style.css" />
+
+    <style>
+        /* global changes */
+        @-moz-keyframes update  { 0% { background-color : #ff0; opacity : 0.75; } 100% { background-color : #fff; opacity : 1; } }
+        @-webkit-keyframes update { 0% { background-color : #ff0; opacity : 0.75; } 100% { background-color : #fff; opacity : 1; } }
+        @-o-keyframes update  { 0% { background-color : #ff0; opacity : 0.75; } 100% { background-color : #fff; opacity : 1; } }
+        @keyframes update   { 0% { background-color : #ff0; opacity : 0.75; } 100% { background-color : #fff; opacity : 1; } }
+         
+        .Changed, .Change { background : transparent; -moz-animation : update 0.25s 10 alternate ease-out; -webkit-animation : loading 0.25s 10 alternate ease-out; -o-animation : loading 0.25s 10 alternate ease-out; animation : loading 0.25s 10 alternate ease-out; transform : translateZ(0); }
+    </style>
     
     <!--[if IE]>
     <link rel="stylesheet" type="text/css" href="/new/css/ie.css" />
@@ -37,7 +47,7 @@
 <script type="text/javascript" src="js/lib/soyutils.js"></script>
 
 <script type="text/javascript" src="http://stage.betonvalue.com/updateLiveNextMatches?request=ajax&javascript=true"></script>
-<script type="text/javascript" src="http://radu.betonvalue.com/new/js/compiledtemplates/nextLiveMatches.js"></script>
+<script type="text/javascript" src="http://stage.betonvalue.com/new/js/compiledtemplates/nextLiveMatches.js"></script>
 <!-- <script type="text/javascript" src="js/app/templates/nextLiveMatches.js"></script> -->
 
 <script>

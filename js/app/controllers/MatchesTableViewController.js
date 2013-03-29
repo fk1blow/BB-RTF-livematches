@@ -32,6 +32,22 @@ var MatchTableController = SKMObject.extend({
       this._handleRemovedMatch, this);
   },
 
+  /*createMatchesList: function(matchesList) {
+    console.log('createMatchesList', matchesList);
+  },
+
+  updateMatchesList: function(matchesList) {
+    console.log('updateMatchesList', matchesList);
+  },
+
+  deleteMatchesList: function(matchesList) {
+    console.log('deleteMatchesList', matchesList);
+  },*/
+
+  processUpdatesList: function(updatesList) {
+    cl('processUpdatesList', updatesList)
+  },
+
   processMatchesListUpdates: function(updatesJson) {
     var updateArr = updatesJson['nextLiveMatches'];
     var createItems, updateItems, deleteItems;
