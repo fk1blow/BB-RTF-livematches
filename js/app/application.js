@@ -34,8 +34,11 @@ RTF.Config.sequence = ['WebSocket'];
 
 var rtf = window.RTFApi = RTF.Api.get();
 rtf.addUrlParameter('clientId', (new Date).getTime());
-rtf.addUrlParameter('jSessionId', '159E05F0CF5BADF0AB551C4C54067403');
-rtf.addSubscription('nextLiveMatches');
+rtf.addUrlParameter('jSessionId', "28A6312E6F149611A08B24AA487C45A7");
+
+// rtf.subscribeToChannel('nextLiveMatches');
+// rtf.subscribeToChannel('nextLiveMatches', { a: 'a val', b: 'b val' });
+// rtf.subscribeToChannel('nextLiveMatches', { c: 'c' });
 
 
 rtf.on('message:nextLiveMatches', function(updatesObj) {
@@ -47,6 +50,10 @@ rtf.on('message:nextLiveMatches', function(updatesObj) {
   //   cl(update)
   //   // matchesTableController.processMatchesListUpdates(update);
   // });
+});
+
+rtf.on('message:error', function(updatesObj) {
+  cl('%cmessage:error', 'color:red', updatesObj);
 });
 
 
