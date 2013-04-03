@@ -847,7 +847,7 @@ return WSHandler;
 
 });
 
-// SKM WebSocket implementation
+// WebSocket wrapper
 
 define('skm/net/WSWrapper',['skm/k/Object',
   'skm/util/Logger',
@@ -928,7 +928,7 @@ var HandlerEventDelegates = {
 
     connection.on('message', function(message) {
       if ( message == 'pong' )
-        Logger.debug('%cWSWrapper :: pong', 'color:blue');
+        Logger.debug('%cWSWrapper : pong', 'color:blue');
       else
         this.fire('message', message);
     }, this)
@@ -1010,6 +1010,7 @@ var WSWrapper = SKMObject.extend(Subscribable, HandlerEventDelegates, {
     Logger.debug('%cnew WSWrapper', 'color:#A2A2A2');
     this._timerPing = Timer.create({ tickInterval: this.pingInterval, ticks: 0 });
     this._timerPing.on('tick', this.ping, this);
+    this._initUnloadSynDisconnect();
     this._initNativeWrapper();
     this._initConnectionHandler();
   },
@@ -1020,11 +1021,11 @@ var WSWrapper = SKMObject.extend(Subscribable, HandlerEventDelegates, {
 
   connect: function() {
     if ( this.isOpened() ) {
-      Logger.error('WebSocket already open.');
+      Logger.error('WSWrapper.connect : ws already open.');
       return false;
     }
     if ( this.isReconnecting() ) {
-      Logger.error('WebSocket already trying to reconnect.');
+      Logger.error('WSWrapper.connect : ws already trying to reconnect.');
       return false;
     }
     this._startConnecting();
@@ -1032,16 +1033,16 @@ var WSWrapper = SKMObject.extend(Subscribable, HandlerEventDelegates, {
   },
 
   disconnect: function() {
-    Logger.info('WebSocket disconnect.');
     this._stopConnecting();
+    return true;
   },
 
   send: function(message) {
     var socketObject = this._nativeWrapper.getSocketObject();
     // If the socket is not ready or not created yet
     if ( socketObject === null || !this.isOpened() ) {
-      Logger.info('Unable to send message; invalid socket ' +
-                  'wrapper state or connection not yet opened.');
+      Logger.info('WSWrapper.send : unable to send message; invalid'
+        + ' wrapper state or connection not yet opened.');
       return;
     }
     // Wrap inside a timeout if iDevice browser detected
@@ -1060,11 +1061,12 @@ var WSWrapper = SKMObject.extend(Subscribable, HandlerEventDelegates, {
    */
   ping: function() {
     if ( ! this.isOpened() ) {
-      Logger.info('Cannot ping server. WebSocket connection is closed.');
+      Logger.info('WSWrapper.ping : cannot ping server or'
+        + ' connection is closed. Stopping ping timer.');
       this._timerPing.stop();
       return false;
     }
-    Logger.debug('%cWSWrapper :: ping', 'color:green');
+    Logger.debug('%cWSWrapper : ping', 'color:green');
     this.send('ping');
     return this;
   },
@@ -1140,6 +1142,14 @@ var WSWrapper = SKMObject.extend(Subscribable, HandlerEventDelegates, {
     });
     // Disconnect and auto reconnect bindings
     this._attachConnectionEvents();
+  },
+
+  _initUnloadSynDisconnect: function() {
+    if ( this.syncDisconnectOnUnload )
+      var that = this;
+      window.onunload = function() {
+        that.disconnect();
+      }
   }
 });
 
@@ -1356,21 +1366,18 @@ var Logger = SKMLogger.create();
 
 
 var ManagerDelegates = {
-  handleConnectorDeactivated: function() {
-    Logger.debug('%cManagerDelegates connector:deactivated!', 'color:red');
-    this.fire('deactivated');
+  handleConnectorTransportDeactivated: function() {
+    this.fire('connector:deactivated');
     this._stopCurrentSequence();
     this._startNextSequence();
   },
 
-  handleConnectorError: function(error) {
-    Logger.debug('%cManagerDelegates api:error', 'color:red', error);
-    this.fire('stopped');
+  handleConnectorApiError: function(error) {
+    this.fire('protocols:error api:error');
     this._stopCurrentSequence();
   },
 
-  handleConnectorUpdate: function(message) {
-    Logger.debug('%cManagerDelegates api:update', 'color:green', message);
+  handleConnectorApiUpdate: function(message) {
     this.fire('update', message);
   }
 }
@@ -1440,18 +1447,6 @@ var Manager = SKMObject.extend(Subscribable, ManagerDelegates, {
     this._activeConnector = null;
     this.started = false;
   },
-
-  /**
-  * Pauses the sequence and doesn't
-  * modify sequence index
-  */
-  pauseConnectors: function() {},
-
-  /**
-  * Resumes the sequence, not altered
-  * since the pause
-  */
-  resumeConnectors: function() {},
   
   /**
    * Switches to the next connector in sequence
@@ -1522,8 +1517,8 @@ var Manager = SKMObject.extend(Subscribable, ManagerDelegates, {
     if ( connector = this.getActiveConnector() )
       connector.sendMessage(message);
     else {
-      Logger.info('ConnectorManager.sendMessage : invalid connector type' + 
-        ' or connector is null');
+      Logger.info('ConnectorManager.sendMessage : invalid connector type' 
+        + ' or connector is null');
     }
     return this;
   },
@@ -1563,7 +1558,7 @@ var Manager = SKMObject.extend(Subscribable, ManagerDelegates, {
    * and starts the update
    */
   _startNextSequence: function() {
-    Logger.debug('%cConnectorManager : starting next sequence', 'color:green');
+    Logger.debug('ConnectorManager : starting next sequence');
 
     // tell that a next sequence is about the be started
     this.fire('before:nextSequence');
@@ -1574,7 +1569,7 @@ var Manager = SKMObject.extend(Subscribable, ManagerDelegates, {
     if ( this._activeConnector != undefined ) {
       this._startConnector(this._activeConnector);
     } else {
-      Logger.debug('%ccConnectorManager : sequence complete!', 'color:red');
+      Logger.debug('ConnectorManager : sequence complete!');
       this._activeConnector = null;
       this.started = false;
     }
@@ -1586,11 +1581,11 @@ var Manager = SKMObject.extend(Subscribable, ManagerDelegates, {
    * Stops the current sequence and end update
    */
   _stopCurrentSequence: function() {
-    Logger.debug('%cConnectorManager : ' + 
-      'stopping current sequence', 'color:green');
+    Logger.debug('ConnectorManager : stopping current sequence');
     // Remove events and end update
     if ( this._activeConnector ) {
-      this._activeConnector.off().endUpdate();
+      this._activeConnector.off()
+      this._activeConnector.endUpdate();
       this._activeConnector = null;
     }
   },
@@ -1604,19 +1599,16 @@ var Manager = SKMObject.extend(Subscribable, ManagerDelegates, {
 
   _startConnector: function(connector) {
     this.fire('before:startConnector');
-
     // Stop current connectors and start next one
-    connector.on('connector:deactivated', this.handleConnectorDeactivated, this);
-
+    connector.on('transport:deactivated',
+      this.handleConnectorTransportDeactivated, this);
     // Stop and clean current connector
-    connector.on('api:error', this.handleConnectorError, this);
-
+    connector.on('api:error', this.handleConnectorApiError, this);
     // notify of update...
-    connector.on('api:update', this.handleConnectorUpdate, this);
-
+    connector.on('api:update', this.handleConnectorApiUpdate, this);
     // Begin update connector
     connector.beginUpdate();
-
+    // ...aaaaaaand, be gone
     this.fire('after:startConnector');
   }
 });
@@ -1749,6 +1741,10 @@ var Connector = SKMObject.extend(Subscribable, {
     // console.log('%cConnector.buildTransportUrl : ', 'color:red', this._typeName);
     var qs = this.urlParamModel.toQueryString();
     this.transport.url = this.urlBase + qs;
+  },
+
+  getType: function() {
+    return this._typeName;
   }
 });
 
@@ -1850,7 +1846,7 @@ var XHRConnector = BaseConnector.extend({
     if ( err.status == 405 ) {
       this.fire('api:error', err.responseText);
     } else {
-      this.fire('connector:deactivated');
+      this.fire('transport:deactivated');
     }
   }
 });
@@ -1879,11 +1875,6 @@ var ConnectorErrors = {
   LIST_TO_BIG: 'Confirmation Message Sent list is too big',
   READY_LIST_TO_BIG: 'Ready To send Message list is too big'
 }
-
-
-
-// should be implemented by every connector
-var ConnectorDecisionDelegate = {}
 
 
 var WebSocketConnector = BaseConnector.extend({
@@ -1926,7 +1917,7 @@ var WebSocketConnector = BaseConnector.extend({
   sendMessage: function(msg) {
     if ( msg && (typeof msg === 'object') )
       msg = JSON.stringify(msg);
-    Logger.debug('%cWebSocketConnector.sendMessage : ', 'color:red', msg);
+    Logger.debug('WebSocketConnector.sendMessage : ', msg);
     this.transport.send(msg);
   },
 
@@ -1945,7 +1936,7 @@ var WebSocketConnector = BaseConnector.extend({
    * @param  {Object} message JSON message send by rtf server api
    */
   handleReceivedMessage: function(message) {
-    Logger.info('WebSocketConnector.handleReceivedMessage');
+    // Logger.info('WebSocketConnector.handleReceivedMessage');
     message = JSON.parse(message);
     this.fire('api:update', message);
   },
@@ -1961,7 +1952,7 @@ var WebSocketConnector = BaseConnector.extend({
    */
   handleReconnectingStopped: function() {
     Logger.info('WebSocketConnector.handleReconnectingStopped');
-    this.fire('connector:deactivated');
+    this.fire('transport:deactivated');
   },
   
   /**
@@ -1976,13 +1967,17 @@ var WebSocketConnector = BaseConnector.extend({
    * @param  {Object} message JSON message sent by rtf server api
    */
   hanleLinkClosed: function(message) {
-    var reason;
-    Logger.info('WebSocketConnector.hanleLinkClosed');
-    if ( message ) {
-      reason = jQuery.parseJSON(message.reason);
-      if ( reason.error )
-        this.fire('api:error', reason.error);
-    }
+   var reason;
+    Logger.info('WebSocketConnector.hanleLinkClosed');
+    if ( message ) { // if the message is string you got an exception, thats baaad!!!
+        try{
+            reason = JSON.parse(message.reason);// JSON.parse douchebag
+        }catch(e){
+            reason = message;
+        }
+      if ( reason )
+        this.fire('api:error', reason);
+    }
   }
 });
 
@@ -1991,6 +1986,34 @@ return WebSocketConnector;
 
 
 });
+/*
+
+1 Subscription / Channels
+-----------------------
+
+# 1.1 Adding
+
+  - if a subscription was added, the server api will respond with
+  either a confirmation message, telling that a subscription was added,
+  or by triggering a [message:error], meaning that something went wrong.
+
+  - A "message:error" event is triggered when:
+      1. the subscription name is incorrect
+      2. the subscription params are incorrect
+
+  - Basically, the widget client can assume that a subscription has been
+  successfully registered as long as it doesn't receive an error
+
+
+
+# 1.2 Updating / altering 
+  
+  - on handleBeforeNextSequence
+  - on handleAfterStartConnector
+
+
+
+ */
 
 // RTF Api Manager implementation
 
@@ -2016,137 +2039,15 @@ var Logger = SKMLogger.create();
  */
 
 
-var Config = (function(){
-  var transportsURLs = {
+var Config = {
+  sequence: ['WebSocket', 'XHR'],
+
+  urls: {
     ws: 'ws://localhost:8080/testws',
     xhr: 'http://localhost:8080/testajax'
-  };
-
-  var defaultURLs = {
-    ws: 'ws://localhost:8080/testws',
-    xhr: 'http://localhost:8080/testajax'
-  };
-
-  var connectorSequence = ['WebSocket', 'XHR'];
-
-  var wsReconnectAttempts = 1;
-
-  return {
-    getSequence: function() {
-      return connectorSequence;
-    },
-
-    setSequence: function(sequence) {
-      connectorSequence = sequence;
-    },
-
-    getWSReconnectAttempts: function() {
-      return wsReconnectAttempts;
-    },
-
-    setWSReconnectAttempts: function(attempts) {
-      wsReconnectAttempts = attempts;
-    },
-
-    getWSUrl: function() {
-      var url = null;
-      if ( ! (url = transportsURLs.ws) ) {
-        url = defaultURLs.ws;
-        Logger.info('%cConfig.getWSUrl : ws url is null - '
-          + ' returning default url', 'color:red');
-      }
-      return transportsURLs.ws;
-    },
-
-    setWSUrl: function(url) {
-      transportsURLs.ws = url;
-    },
-
-    getXHRUrl: function() {
-      var url = null;
-      if ( ! (url = transportsURLs.xhr) ) {
-        url = defaultURLs.xhr;
-        Logger.info('%cConfig.getXHRUrl : xhr url is null - '
-          + ' returning default url', 'color:red');
-      }
-      return transportsURLs.xhr;
-    },
-
-    setXHRUrl: function(url) {
-      transportsURLs.xhr = url;
-    }
-  }
-}());
-
-
-/*
-  Subscriptions and Param lists
- */
-
-
-var Subscription = SKMObject.extend(Subscribable, {
-  name: undefined,
-
-  initialize: function() {
-    Logger.debug('%cnew Subscription', 'color:#A2A2A2', this.name);
   },
 
-  handleUpdate: function(message) {
-    this.fire('update', message);
-  },
-
-  destroy: function() {
-    this.fire('destroy');
-  }
-});
-
-
-var rtfSubscriptionList = {
-  _subscriptions: null,
-
-  add: function(name, subscription) {
-    if ( ! this._subscriptions )
-      this._subscriptions = {};
-    return this._subscriptions[name] = subscription;
-  },
-
-  remove: function(name) {
-    if ( name in this._subscriptions )
-      delete this._subscriptions[name];
-    return true;
-  },
-
-  get: function(name) {
-    this._subscriptions = this._subscriptions || {};
-    return this._subscriptions[name];
-  },
-
-  eachSubscription: function(callback, context) {
-    var subscription, list = this._subscriptions;
-    for ( subscription in list ) {
-      callback.call(context || this, list[subscription]);
-    }
-  },
-
-  getList: function() {
-    return this._subscriptions;
-  },
-
-  has: function(subscription) {
-    return this._subscriptions && (subscription in this._subscriptions);
-  },
-
-  isNullOrEmpty: function() {
-    var counter = 0, sub;
-    if ( this._subscriptions !== null ) {
-      for (sub in this._subscriptions) {
-        counter++;
-      }
-      if (counter > 0)
-        return false;
-    }
-    return true;
-  }
+  wsReconnectAttempts: 3
 };
 
 
@@ -2205,9 +2106,7 @@ var ParamsModel = SKMObject.extend(Subscribable, {
     return this;
   },
 
-  addByKeyAndValue: function(paramObject) {
-    //
-  },
+  addByKeyAndValue: function(paramObject) {},
 
   remove: function(name) {
     var list = this.getList();
@@ -2228,216 +2127,317 @@ var ParamsModel = SKMObject.extend(Subscribable, {
 });
 
 
-var rtfParamList = ParamsModel.create();
-
-
 /**
  * RTFApi handlers delegate
  */
-var ApiDelegates = {
-  handleMessage: function(data) {
-    var batchId = this._batchId;
-    if ( 'message' in data ) {
-      Logger.debug('ApiDelegates.handleMessage :: message', data);
-    } else if ( 'reconfirmation' in data ) {
-      Logger.debug('ApiDelegates.handleMessage :: reconfirmation', data);
-    } else if ( 'noupdates' in data ) {
-      return this.handleNoUpdates(data);
-    } else {
-      return this.handleInvalidData(data);
+var ApiHandlersDelegate = {
+  handleMessageObservers: function(dataObj) {
+    var itemKey = null, i = 0, len = dataObj.length,
+      messageUpdateItem, itemVal = null;
+    
+    // for every item in the update/reconfirmation array
+    for ( i = 0; i < len; i++ ) {
+      messageUpdateItem = dataObj[i];
+
+      // each message update object key - subscription/MBEAN/error
+      for ( itemKey in messageUpdateItem ) {
+        // the value of the current itemKey
+        itemVal = messageUpdateItem[itemKey];
+
+        // If the subscription is incorrect, assume it will trigger an error
+        /*if ( itemKey == 'subscription' )
+          this.handleSubscriptionConfirmation(itemVal);
+        else if ( itemKey == 'MBEAN' )*/
+        if ( itemKey == 'MBEAN' )
+          this.handleMbeanMessage(itemVal);
+        // Add test case
+        else if ( itemKey == 'error' )
+          this.fire('message:error', itemVal);
+        else
+          this.fire('message:' + itemKey, itemVal);
+      }
     }
-    // get batchId sent by server
-    batchId = data['batchId'];
-    // update it in params list
-    rtfParamList.alter('batchId', batchId);
-    // send message
+  },
+
+  handleMessage: function(data) {
+    if ( 'update' in data ) {
+      Logger.debug('ApiHandlersDelegate.handleMessage, update', data);
+      this.handleMessageObservers(data['update']);
+      this.handleUpdateBatchId(data['batchId']);
+    }
+    else if ( 'reconfirmation' in data ) {
+      Logger.debug('ApiHandlersDelegate.handleMessage, reconfirmation', data);
+      this.handleMessageObservers(data['reconfirmation']); 
+      this.handleUpdateBatchId(data['batchId']);
+    }
+    else if ( 'noupdates' in data ) {
+      Logger.debug('ApiHandlersDelegate.handleNoUpdates, batchId ', this._batchId);
+      // Just send the same batchId, over and over again
+      this.handleUpdateBatchId(this._batchId);
+    }
+    else {
+      Logger.error('ApiHandlersDelegate.handleMessage, invalid data ', data);
+    }
+  },
+
+  // If the subscription is incorrect, assume it will trigger an error
+  handleSubscriptionConfirmation: function(listObj) {
+    /*var subscription = null, subscriptionIdx = undefined;
+    Logger.debug('ApiHandlersDelegate.handleSubscriptionConfirmation');
+
+    // For each subscription in the confirmation object
+    // remove the one found at index - mutate the [_subscriptions] array
+    for ( subscription in listObj ) {
+      subscriptionIdx = this._subscriptions.indexOf(subscription);
+      if ( subscriptionIdx >= 0 ) {
+        Logger.debug('%cSubscription confirmed :: ', 'color:red', subscription);
+        this._subscriptions.splice(subscriptionIdx, 1);
+      }
+    }*/
+  },
+
+  handleMbeanMessage: function(message) {
+    Logger.debug('%cApiHandlersDelegate.handleMbeanMessage',
+      'color:red', message);
+  },
+
+  handleUpdateBatchId: function(batchId) {
+    this._paramList.alter('batchId', batchId);
+    // Dude, you must set the current object property too, so when you'll
+    // try to reconnect you must have last batchId, not 0!!
+    // Thanks, dude!
+    this._batchId = batchId;
     this.sendMessage('batchId{' + batchId + '}');
   },
 
-  handleNoUpdates: function() {
-    Logger.debug('ApiDelegates.handleNoUpdates :: batchId ', this._batchId);
-    this.sendMessage('batchId{' + this._batchId + '}');
+  /**
+   * Handles a connector's protocol or api error
+   * 
+   * @description Event triggered whenever the (server)api/protocols
+   * has an issue with the current connection and its parameters.
+   * EX: batchId is wrong, the server might trigger api:error and
+   * the widget subscribed, might want to resubscribe
+   * 
+   * @todo Usually, the subscriptions will have to be notified of this error!
+   */
+  handleConnectorProtocolsApiError: function() {
+    Logger.warn('%cApiHandlersDelegate.handleApiProtocolsError '
+      + 'An api or protocol error has been triggered', 'color:red');
   },
 
-  handleInvalidData: function(data) {
-    Logger.error('ApiDelegates.handleInvalidData :: invalid data', data);
+  /**
+   * Handles when a connector has been deactivated
+   * 
+   * @description Usually, this means the transport could not be
+   * initialized or has tried to reconnect unsuccesfully
+   * For the time being, just log the event
+   */
+  handleConnectorDeactivated: function() {
+    Logger.debug('%cApiHandlersDelegate.handleConnectorDeactivated', 'color:red');
   },
 
-  // notify all subscriptions that an error has occured
-  handleManagerSequenceStopped: function() {
-    Logger.debug('ApiDelegates.handleManagerSequenceStopped');
-  },
-
-  // notify all subscriptions that sequence has been deactivated
-  handleManagerSequenceDeactivated: function() {
-    Logger.warn('ApiDelegates.handleManagerSequenceDeactivated');
-  },
-
-  handleResetThenAddSubscribes: function() {
-    rtfParamList.reset('subscribe');
+  handleBeforeNextSequence: function() {
+    this._paramList.reset('subscribe');
+    
     // Re-add the subscriptions to the params list
-    rtfSubscriptionList.eachSubscription(function(subscription) {
-      rtfParamList.add('subscribe', subscription.name);
-    });
+    /*rtfSubscriptionList.eachSubscription(function(subscription) {
+      this._paramList.add('subscribe', subscription.name);
+    });*/
+    
+
+    // Rebuild using another object that deals with subscribed channels and shit...
+    /*var subscribedChannel;
+
+    for ( subscribedChannel in this._subscribedChannels ) {
+      this._paramList.add('subscribe', )
+    }*/
   },
 
-  handleRemoveSubscribes: function() {
-    rtfParamList.remove('subscribe');
-  },
-
-  handleBrowserUnload: function() {
-    this.sendMessage('closeConnection');
+  handleAfterStartConnector: function() {
+    this._paramList.remove('subscribe');
   }
-}
+};
 
 
 /**
  * API constructor
  */
-var RTFApi = SKMObject.extend(ApiDelegates, {
-  _clientId:  null,
-  
-  _sessionId:  null,
-
+var RTFApi = SKMObject.extend(ApiHandlersDelegate, Subscribable, {
   _batchId: 0,
+
+  _paramList: null,
 
   _connectorManager: null,
 
+  _subscribedChannels: null,
+
+  _subscriptionParams: null,
+
+  // If the subscription is incorrect, assume it will trigger an error
+  /*_subscriptions: null,*/
+
   initialize: function() {
     Logger.debug('%cnew RTFApi', 'color:#A2A2A2');
-
-    var that = this;
-
-    // handle browser/tab unload/close
-    $(window).bind("beforeunload", function() {
-      that.handleBrowserUnload();
-    });
+ 
+    // Create the parameters list object
+    this._paramList = ParamsModel.create();
     
     // Prepare batchId and add it to the parameterizer
-    rtfParamList.add('batchId', this._batchId);
+    this._paramList.add('batchId', this._batchId);
     
     // creates the connector manager
     this._createConnectorManager();
 
-    // Resends a confirmation back to server api
-    this._connectorManager.on('update',
-      this.handleMessage, this);
+    // attaches connector handlers
+    this._attachConnectorManagerHandlers();
 
-    // Handle when manager has stopped - something wrong happened
-    this._connectorManager.on('stopped',
-      this.handleManagerSequenceStopped, this);
+    this._subscribedChannels = {};
 
-    // Handle when manager has been deactivated - next/sequence switch
-    this._connectorManager.on('deactivated',
-      this.handleManagerSequenceDeactivated, this);
-
-    // re-add subscriptions to the param list before connector began update
-    this._connectorManager.on('before:nextSequence',
-      this.handleResetThenAddSubscribes, this);
-
-    // remove subscribe after every connector has began update
-    this._connectorManager.on('after:startConnector',
-      this.handleRemoveSubscribes, this);
+    this._subscriptionParams = [];
   },
 
   startUpdates: function() {
-    Logger.debug('%cRTFApi.startUpdates', 'color:green');
-    // check clientId, subscription list
-    this._checkEssentialFields();
     // Start the connectors, if any available.
     this._connectorManager.startConnectors();
   },
 
   stopUpdates: function() {
-    Logger.debug('%cRTFApi.stopUpdates', 'color:green');
     this._connectorManager.stopConnectors();
   },
 
   switchToNextConnector: function() {
-    Logger.debug('%cRTFApi.switchToNextConnector', 'color:green');
     this._connectorManager.switchToNextConnector();
   },
 
+  addUrlParameter: function(name, value) {
+    this._paramList.add(name, value);
+    return this;
+  },
+
   sendMessage: function(message) {
-    if ( ! message )
-      Logger.warn('RTFApi.sendMessage : unable to send an empty message');
     this._connectorManager.sendMessage(message);
   },
 
-  
-  /**
-   * @todo
-   * Refactor params list create/update
-   */
+  subscribeToChannel: function(name, optParams) {
+    var connectorType, message = '';//'subscribe:{' + name + '}';
+    var connector = this._connectorManager.getActiveConnector();
+    var messageParamsObj = {};
 
+    // Add it to the this._paramList
+    this._paramList.add('subscribe', name);
 
-  /**
-   * Sets the clientId of the rtf client
-   *
-   * @description same as session id though can be left out
-   * and the value implicitly retrieved/set by server api
-   * @param {String} id cliend/sessions id string
-   */
-  setClientId: function(id) {
-    var cid = this._clientId;
-    if ( cid !== null ) {
-      throw new Error('RTFApi.setClientId : clientId already set!');
+    this._addParamsForSubscription(name, optParams);
+
+    // functioneaza si fara a verifica daca exista optParams
+    if ( connector && optParams ) {
+      // connectorType = 'XHR';
+      connectorType = connector.getType();
+      
+      message = 'subscribe:{' + name + '}';
+      messageParamsObj[name] = this._subscribedChannels[name];
+
+      if ( connectorType == 'WS' ) {
+          message += 'params:' + JSON.stringify(messageParamsObj)
+                                     .replace(/\"|\'/g, '');
+      }
+      else if ( connectorType == 'XHR' ) {
+        message = messageParamsObj;
+      }
+
+      cl(message)
     }
-    rtfParamList.add('clientId', this._clientId = id);
-  },
-  
-  /**
-   * @todo create a [addParam] method that takes an object as argument
-   * { paramKey: value } and sends it to the [rtfParamList]
-   */
-  setSessionId: function(key,value) {
-    var cid = this._sessionId;
-    if ( cid !== null ) {
-      throw new Error('RTFApi.setSessionId : ' + key + ' already set!');
-    }
-    rtfParamList.add(key, value);
-  },
 
-  /**
-   * Returns a subscription
-   * 
-   * @param  {String} name the name identifier of the subscription
-   */
-  getSubscription: function(name) {
-    return rtfSubscriptionList.get(name);
+    cl(this._subscribedChannels)
   },
 
   /**
    * Adds a new subscription
    *
-   * @description creates a new Subscription object
-   * and ties it to the connector's "api:update" event
-   * @param {String} name subscription name
-   * @param {Object} optParams the optional parameters object to be
-   * sendt alongside subscription name
+   * @todo Break this functionality outside the Rtf Api
+   * @description Adds a new channel listeners and adds
+   * the 'subscribe' to [_paramList]
    */
-  addSubscription: function(name, optParams) {
-    var subscription, message;
-    if ( rtfSubscriptionList.has(name) ) {
-      Logger.info('RTFApi.addSubscription :: ' + name +
-        ' subscription already registered!'); 
+  xxx_subscribeToChannel: function(name, optParams) {
+    var connectorType, message = '';//'subscribe:{' + name + '}';
+    var connector = this._connectorManager.getActiveConnector();
+    var messageParamsObj = {};
+
+    // Add it to the this._paramList
+    this._paramList.add('subscribe', name);
+
+    this._addParamsForSubscription(name, optParams);
+
+    // functioneaza si fara a verifica daca exista optParams
+    if ( connector && optParams ) {
+      // connectorType = 'XHR';
+      connectorType = connector.getType();
+      
+      message = 'subscribe:{' + name + '}';
+      messageParamsObj[name] = this._subscribedChannels[name];
+
+      if ( connectorType == 'WS' ) {
+          message += 'params:' + JSON.stringify(messageParamsObj)
+                                     .replace(/\"|\'/g, '');
+      }
+      else if ( connectorType == 'XHR' ) {
+        message = messageParamsObj;
+      }
+
+      cl(message)
     }
-    message = 'subscribe{' + name + '}';
 
-    // Create the new subscription and add it to the list
-    subscription = rtfSubscriptionList.add( name,
-      Subscription.create({ name: name }) );
-    
-    // Tie the subscription to the manager's updates
-    this._connectorManager.on('update', subscription.handleUpdate, subscription);
+    cl(this._subscribedChannels)
 
-    // Add it to the rtfParamList
-    rtfParamList.add('subscribe', name);
+
+    // this.sendMessage(message);
+
+    // if params are sent, concatenate to message string
+    /*if ( optParams ) {
+      var  newParams = {};
+      newParams[name] = optParams;
+
+      var strParams = JSON.stringify(newParams).replace(/\"|\'/g, '');
+      this.sendMessage({ params: strParams });
+    } else {
+      this.sendMessage({ message: message });
+    }*/
+
+    // cl(this._subscribedChannels)
+
+    // Tell the connector to notify server api
+    // this.sendMessage(message, { params: optParams });
+  },
+
+  _addParamsForSubscription: function(name, params) {
+    var channel, channelList = this._subscribedChannels,
+        item, paramsList = params || {};
+    // Now compose the subscribed list
+    if ( name in channelList ) {
+      channel = channelList[name];
+    } else {
+      channel = channelList[name] = {};
+    }
+    // ...and add channel parameters, if any
+    for ( item in paramsList ) {
+      channel[item] = paramsList[item];
+    }
+  },
+
+
+
+
+
+
+  xxx2xx_subscribeToChannel: function(name, optParams) {
+    var message = 'subscribe{' + name + '}';
+
+    // Add it to the this._paramList
+    this._paramList.add('subscribe', name);
 
     // if params are sent, concatenate to message string
     if ( optParams ) {
       var  newParams = {};
-      newParams[name]=optParams;
+      newParams[name] = optParams;
 
       var strParams = JSON.stringify(newParams).replace(/\"|\'/g, '');
       // this._connectorManager += ('params{' + name + ':{' + strParams + '}');
@@ -2446,37 +2446,18 @@ var RTFApi = SKMObject.extend(ApiDelegates, {
       this.sendMessage({ message: message });
     }
 
-    // message = optParams;
-
     // Tell the connector to notify server api
-    // this.sendMessage(message, { params: optParams });
-
-    
-
-    return subscription;
+    this.sendMessage(message, { params: optParams });
   },
 
   /**
    * Removes a subscription
    *
-   * @description destroys the instance and
-   * removes the callbacks on connector "api:update" event
-   * @param  {String} name subscription name
+   * @todo Should this method send a message back to the server
+   * notifying it that a subscription has been removed ?!?!?!?
    */
-  removeSubscription: function(name) {
-    var subscription = rtfSubscriptionList.get(name);
-
-    // Dettach update event
-    this._connectorManager.off('update', subscription.handleUpdate, subscription);
-    
-    // Remove from subscription list
-    rtfSubscriptionList.remove(name);
-
-    // Destroy subscription
-    subscription.destroy();
-    
-    // rtfParamList.remove('subscribe');
-    rtfParamList.remove('subscribe');
+  unsubscribeFromChannel: function(name) {
+    this._paramList.remove('subscribe');
   },
 
 
@@ -2487,35 +2468,48 @@ var RTFApi = SKMObject.extend(ApiDelegates, {
 
   _createConnectorManager: function() {
     var manager = this._connectorManager = ConnectorManager.create({
-      sequence: Config.getSequence()
+      sequence: Config.sequence
     });
 
     manager.registerConnector('WebSocket', WSConnector.create({
-      urlBase: Config.getWSUrl(),
-      urlParamModel: rtfParamList
+      urlBase: Config.urls.ws,
+      urlParamModel: this._paramList
     })).addTransport(WSWrapper.create({
-      reconnectAttempts: Config.getWSReconnectAttempts(),
+      reconnectAttempts: Config.wsReconnectAttempts,
       pingServer: true
     }));
 
     manager.registerConnector('XHR', XHRConnector.create({
-      urlBase: Config.getXHRUrl(),
-      urlParamModel: rtfParamList
+      urlBase: Config.urls.xhr,
+      urlParamModel: this._paramList
     })).addTransport(XHRWrapper.create());
+  },
+
+  _attachConnectorManagerHandlers: function() {
+    // Resends a confirmation back to server api
+    this._connectorManager.on('update', this.handleMessage, this);
+
+    // Handle when manager has stopped - something wrong happened
+    this._connectorManager.on('protocols:error api:error',
+      this.handleConnectorProtocolsApiError, this);
+
+    // Handle when manager has been deactivated - next/sequence switch
+    // or transport issues - issues handled by the manager
+    this._connectorManager.on('connector:deactivated',
+      this.handleConnectorDeactivated, this);
+
+    // re-add subscriptions to the param list before connector began update
+    this._connectorManager.on('before:nextSequence',
+      this.handleBeforeNextSequence, this);
+
+    // remove subscribtions after every connector has began update
+    this._connectorManager.on('after:startConnector',
+      this.handleAfterStartConnector, this);
   },
 
   _getIncrementedBatchId: function() {
     var bid = this._batchId++
     return bid;
-  },
-
-  _checkEssentialFields: function() {
-    // Checks clientId presence
-    if ( !this._clientId )
-      Logger.warn('RTFApi.startUpdates :: no clientId set!');
-    // Checks the presence of subscriptions
-    if ( rtfSubscriptionList.isNullOrEmpty() )
-      Logger.warn('RTFApi.startUpdates :: subscription list is empty!');
   }
 });
 
@@ -2538,7 +2532,6 @@ return {
 };
 
 
-// end module
 });
 define('models/OutcomeCellModel',[], function(){
 	
@@ -3163,43 +3156,20 @@ define('views/MatchesTable/OutcomeCellView',[], function(){
 			'click a.Bet': 'handleBetClick'
 		},
 
-		/**
-		 * Google Closure Template Object
-		 * Use the predefined methods to render the template
-		 * @type {[Object]}
-		 */
 		_templateMethod:  window.com.betbrain.nextLiveMatches.outcome,
 
 		initialize: function(){
 			// console.log('%cnew OutcomeCellView', 'color:#A2A2A2');
-			this.model.on('change', function(){
-				this.render();
-			}, this)
+			this.model.on('change', this.render, this);
 		},
 
-		/**
-		 * Returns the compiled template with data from the model
-		 * @return {String} 
-		 */
-		createTemplate: function(){
-			if(this.model) {
-				return this._templateMethod({ outcome: this.model.attributes });
-			} else {
-				console.log('Instantiation ERROR! The view has been initialized without a MODEL !!', this);
-				return false;
-			}
-		},
-
-		/**
-		 * Appends the template to the container $el property of the view
-		 * @return {void} 
-		 */
 		render: function(){
-			console.log('%cOutcomeCellView.rerender', 'color:green');
+			console.log('%cOutcomeCellView.render', 'color:green');
 			var content = this._templateMethod({ 'outcome': this.model.attributes });
 			var el = $(content);
 			this.$el.replaceWith(el);
 			this.setElement(el);
+			// el.addClass('Changed');
 		},
 
 		handleBetClick: function(evt) {
@@ -3411,6 +3381,22 @@ var MatchTableController = SKMObject.extend({
       this._handleRemovedMatch, this);
   },
 
+  /*createMatchesList: function(matchesList) {
+    console.log('createMatchesList', matchesList);
+  },
+
+  updateMatchesList: function(matchesList) {
+    console.log('updateMatchesList', matchesList);
+  },
+
+  deleteMatchesList: function(matchesList) {
+    console.log('deleteMatchesList', matchesList);
+  },*/
+
+  processUpdatesList: function(updatesList) {
+    cl('processUpdatesList', updatesList)
+  },
+
   processMatchesListUpdates: function(updatesJson) {
     var updateArr = updatesJson['nextLiveMatches'];
     var createItems, updateItems, deleteItems;
@@ -3498,30 +3484,46 @@ window.mtc = matchesTableController;
 
 
 
-RTF.Config.setWSUrl('ws://radu.betonvalue.com:8080/rtfws');
-RTF.Config.setXHRUrl('http://radu.betonvalue.com/rtfajax');
+RTF.Config.urls.ws = 'ws://stage.betonvalue.com/rtfws';
+RTF.Config.urls.xhr = 'http://radu.betonvalue.com/rtfajax';
+RTF.Config.wsReconnectAttempts = 0;
+RTF.Config.sequence = ['WebSocket'];
 
-RTF.Config.setSequence(['WebSocket', 'XHR']);
 
-var rtf;
-window.RTFApi = rtf = RTF.Api.get();
+var rtf = window.RTFApi = RTF.Api.get();
+rtf.addUrlParameter('clientId', (new Date).getTime());
+rtf.addUrlParameter('jSessionId', "28A6312E6F149611A08B24AA487C45A7");
 
-rtf.setClientId((new Date).getTime());
-var sessionId = window.location.hash.replace(/.*=/g, '');
-cl(sessionId)
-rtf.setSessionId('jSessionId', sessionId);
+// rtf.subscribeToChannel('nextLiveMatches');
+rtf.subscribeToChannel('nextLiveMatches', { matches: 10, live: true });
+rtf.subscribeToChannel('otherMatches', { matches:5, outcomes: true });
 
-// rtf.addSubscription('anotherSub');
 
-rtf.addSubscription('nextLiveMatches').on('update', function(update) {
-  var updatesArray = update['message'];
-  _.each(updatesArray, function(matchesUpdatesItem) {
-    matchesTableController.processMatchesListUpdates(matchesUpdatesItem);
-  });
+rtf.on('message:nextLiveMatches', function(updatesObj) {
+  cl('%cmessage:nextLiveMatches', 'color:red', updatesObj);
+  // matchesTableController.processUpdatesList(updatesObj);
+  
+  // _.each(updatesObj, function(update, updateTypeName) {
+  //   cl(updateTypeName)
+  //   cl(update)
+  //   // matchesTableController.processMatchesListUpdates(update);
+  // });
+});
+
+rtf.on('message:error', function(updatesObj) {
+  cl('%cmessage:error', 'color:red', updatesObj);
 });
 
 
-rtf.startUpdates();
+// rtf.addSubscription('nextLiveMatches').on('update', function(update) {
+  /*var updatesArray = update['updateMessage'];
+  _.each(updatesArray, function(matchesUpdatesItem) {
+    matchesTableController.processMatchesListUpdates(matchesUpdatesItem);
+  });*/
+// });
+
+
+// rtf.startUpdates();
 
 
 

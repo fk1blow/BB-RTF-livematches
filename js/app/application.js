@@ -26,7 +26,7 @@ window.mtc = matchesTableController;
 
 
 
-RTF.Config.urls.ws = 'ws://stage.betonvalue.com/rtfws';
+RTF.Config.urls.ws = 'ws://radu.betonvalue.com:8080/rtfws';
 RTF.Config.urls.xhr = 'http://radu.betonvalue.com/rtfajax';
 RTF.Config.wsReconnectAttempts = 0;
 RTF.Config.sequence = ['WebSocket'];
@@ -36,13 +36,9 @@ var rtf = window.RTFApi = RTF.Api.get();
 rtf.addUrlParameter('clientId', (new Date).getTime());
 rtf.addUrlParameter('jSessionId', "28A6312E6F149611A08B24AA487C45A7");
 
-// rtf.subscribeToChannel('nextLiveMatches');
-// rtf.subscribeToChannel('nextLiveMatches', { a: 'a val', b: 'b val' });
-// rtf.subscribeToChannel('nextLiveMatches', { c: 'c' });
-
 
 rtf.on('message:nextLiveMatches', function(updatesObj) {
-  cl('%cmessage:nextLiveMatches', 'color:red', updatesObj);
+  cl('message:nextLiveMatches', updatesObj);
   // matchesTableController.processUpdatesList(updatesObj);
   
   // _.each(updatesObj, function(update, updateTypeName) {
@@ -51,6 +47,7 @@ rtf.on('message:nextLiveMatches', function(updatesObj) {
   //   // matchesTableController.processMatchesListUpdates(update);
   // });
 });
+
 
 rtf.on('message:error', function(updatesObj) {
   cl('%cmessage:error', 'color:red', updatesObj);
@@ -65,8 +62,18 @@ rtf.on('message:error', function(updatesObj) {
 // });
 
 
-rtf.startUpdates();
+// Works
+/*rtf.startUpdates();*/
+
+// Works
+rtf.startUpdates({
+  'nextLiveMatches' : { matches: 5, live: true },
+  // 'otherNewLiveMatches': { matches: 10, outcomes: false } 
+});
 
 
+// rtf.subscribeToChannel('nextLiveMatches');
+// rtf.subscribeToChannel('nextLiveMatches', { matches: 10, live: true });
+// rtf.subscribeToChannel('otherMatches', { matches:5, outcomes: true });
 
 });
