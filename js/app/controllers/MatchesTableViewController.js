@@ -49,7 +49,7 @@ var MatchTableController = SKMObject.extend({
   },
 
   processMatchesListUpdates: function(updatesJson) {
-    var updateArr = updatesJson['nextLiveMatches'];
+    var updateArr = updatesJson;//updatesJson['nextLiveMatches'];
     var createItems, updateItems, deleteItems;
     
     if ( createItems = updateArr['create'] )

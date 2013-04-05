@@ -27,26 +27,43 @@ window.mtc = matchesTableController;
 
 
 RTF.Config.urls.ws = 'ws://radu.betonvalue.com:8080/rtfws';
-RTF.Config.urls.xhr = 'http://radu.betonvalue.com/rtfajax';
+RTF.Config.urls.xhr = 'http://dragos.betonvalue.com/rtfajax';
 RTF.Config.wsReconnectAttempts = 0;
 RTF.Config.sequence = ['WebSocket'];
 
 
-var rtf = window.RTFApi = RTF.Api.get();
+var rtf = window.RTFApi = window.rtf = RTF.Api.get();
 rtf.addUrlParameter('clientId', (new Date).getTime());
-rtf.addUrlParameter('jSessionId', "28A6312E6F149611A08B24AA487C45A7");
+rtf.addUrlParameter('jSessionId', "61B1E7817C270A1BC3877B0CCB6C685E");
 
 
-rtf.on('message:nextLiveMatches', function(updatesObj) {
+// @todo transform to:
+//    rtf.on('update:nextLiveMatches')
+//    rtf.getChannel('nextLiveMatches').on('update')
+//    rtf.getChannel('nextLiveMatches').on('api:error')
+//    rtf.channels.on('error:nextLiveMatches').
+//    rtf.channels.on('update:nextLiveMatches').
+
+// rtf.on('message:nextLiveMatches', function(updatesObj) {
+rtf.subscriptionsHandler.on('update:nextLiveMatches', function(updatesObj) {
+  cl('______________________________________________________')
   cl('message:nextLiveMatches', updatesObj);
+  cl('______________________________________________________')
   // matchesTableController.processUpdatesList(updatesObj);
   
-  // _.each(updatesObj, function(update, updateTypeName) {
-  //   cl(updateTypeName)
-  //   cl(update)
-  //   // matchesTableController.processMatchesListUpdates(update);
-  // });
+  _.each(updatesObj, function(update, updateTypeName) {
+    // cl(updateTypeName)
+    // cl(update)
+    matchesTableController.processMatchesListUpdates(update);
+  });
 });
+
+rtf.subscriptionsHandler.on('update:testChannel', function(updatesObj) {
+  cl('______________________________________________________')
+  cl('message:testChannel', updatesObj);
+  cl('______________________________________________________')
+});
+
 
 
 rtf.on('message:error', function(updatesObj) {
