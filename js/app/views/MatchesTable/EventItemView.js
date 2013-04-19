@@ -42,6 +42,7 @@ var EventItem = Backbone.View.extend({
     var tplRender = com.betbrain.nextLiveMatches[this._templateSuffix];
     var content = tplRender({ match: data });
     this.setElement(content);
+    return this;
   },
 
   renderChildren: function() {
@@ -64,14 +65,38 @@ var EventItem = Backbone.View.extend({
 
   setModel: function(model) {
     this.model = model;
+    this.model.on('change:index', this._handleChangedViewIndex, this);
     return this;
+  },
+
+  destroy: function() {
+    // unbind from model and remove reference
+    this.model.off('change:index', this._handleChangedViewIndex, this);
+    this.model = null;
+
+    // revemo details view
+    this._eventDetailsView.destroy();
+    this._eventDetailsView = null;
+
+    // remove outcomes cells views
+    for (var i = 0; i < this._betCellViews.lenght; i++) {
+      this._betCellViews[i].destroy();
+    }
+    this._betCellViews = null;
+
+    // unbind event from this view and remove from dom
+    this.off().remove();
   },
 
 
   /*
     Private
    */
+  
 
+  _handleChangedViewIndex: function() {
+    this.$el.addClass('Changed');
+  },
   
   _buildMatchesDetailsView: function() {
     var view = new EventDetailsView({

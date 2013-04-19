@@ -32,8 +32,8 @@ var Wrapper = component.ui.TableView.extend({
   renderRow: function(view, index) {
     console.log('%cWrapper.renderRow', 'color:green', view.$el);
     var $elAtIndex = null, $view = view.$el;
-    if ( index ) {
-      $elAtIndex = this.el.find('li.TheMatch').eq(index);
+    if ( typeof index !== 'undefined' ) {
+      $elAtIndex = this.$el.find('li.TheMatch').eq(index);
       if ( $elAtIndex.length )
         $view.insertBefore($elAtIndex);
       else

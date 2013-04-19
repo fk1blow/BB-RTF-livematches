@@ -22,12 +22,16 @@ define( function(){
 			var el = $(content);
 			this.$el.replaceWith(el);
 			this.setElement(el);
-			// el.addClass('Changed');
+			el.addClass('Changed');
 		},
 
 		handleBetClick: function(evt) {
 			evt.preventDefault();
 			console.log('handleBetClick')
+		},
+
+		destroy: function() {
+			this.off().remove();
 		}
 	});
 

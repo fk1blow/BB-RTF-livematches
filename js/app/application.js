@@ -8,6 +8,10 @@ define(['skm/rtf/RTFApi',
 'use strict';
 
 
+/*require(['skm/rtf/RTFApi'], function() {
+  cl('asta e callback-ul apela, dupa ce modulul a fost incarcat')
+});*/
+
 
 
 var tplhtml = com.betbrain.nextLiveMatches.matchesList(jsonMatches);
@@ -22,75 +26,72 @@ window.mtc = matchesTableController;
 
 
 
-// return;
 
 
+var host = window.location.host;
+if (host.indexOf('radu.')>-1||host.indexOf('dragos.')>-1)
+    host = host+":8080";
 
-RTF.Config.urls.ws = 'ws://radu.betonvalue.com:8080/rtfws';
-RTF.Config.urls.xhr = 'http://dragos.betonvalue.com/rtfajax';
-RTF.Config.wsReconnectAttempts = 0;
+
+host = 'dragos.betonvalue.com';
+
+RTF.Config.WebSocket.reconnectAttempts = 0;
+// RTF.Config.sequence = ['WebSocket', 'XHR'];
 RTF.Config.sequence = ['WebSocket'];
+// RTF.Config.sequence = ['XHR'];
+
+RTF.Config.WebSocket.url = 'ws://' + host + ':80/rtfws';
+RTF.Config.XHR.url = 'http://' + window.location.host + '/rtfajax';
 
 
-var rtf = window.RTFApi = window.rtf = RTF.Api.get();
+
+var rtf = window.RTFApi = window.rtf = RTF.Api.getInstance();
 rtf.addUrlParameter('clientId', (new Date).getTime());
-rtf.addUrlParameter('jSessionId', "61B1E7817C270A1BC3877B0CCB6C685E");
+rtf.addUrlParameter('jSessionId', 'C743D52D31C1723B82E7BAAA13D1B4D6');
 
 
-// @todo transform to:
-//    rtf.on('update:nextLiveMatches')
-//    rtf.getChannel('nextLiveMatches').on('update')
-//    rtf.getChannel('nextLiveMatches').on('api:error')
-//    rtf.channels.on('error:nextLiveMatches').
-//    rtf.channels.on('update:nextLiveMatches').
-
-// rtf.on('message:nextLiveMatches', function(updatesObj) {
-rtf.subscriptionsHandler.on('update:nextLiveMatches', function(updatesObj) {
-  cl('______________________________________________________')
-  cl('message:nextLiveMatches', updatesObj);
-  cl('______________________________________________________')
-  // matchesTableController.processUpdatesList(updatesObj);
+rtf.on('message:nextLiveMatches', function(updatesObj) {
+  console.log('______________________________________________________')
+  console.log('message:nextLiveMatches', updatesObj);
   
-  _.each(updatesObj, function(update, updateTypeName) {
-    // cl(updateTypeName)
-    // cl(update)
-    matchesTableController.processMatchesListUpdates(update);
+  _.each(updatesObj, function(json,type) {
+    matchesTableController.processMatchesListUpdates(type, json);
   });
 });
 
-rtf.subscriptionsHandler.on('update:testChannel', function(updatesObj) {
-  cl('______________________________________________________')
-  cl('message:testChannel', updatesObj);
-  cl('______________________________________________________')
+rtf.on('message:testChannel', function(updatesObj) {
+  console.log('______________________________________________________')
+  console.log('message:testChannel', updatesObj);
+  console.log('______________________________________________________')
+});
+
+rtf.on('error:testChannel', function(updatesObj) {
+  console.log('%cmessage:error', 'color:red', updatesObj);
 });
 
 
+rtf.on('deactivated:connector', function() {
+  cl('connector deactivated... for some reason')
+})
 
-rtf.on('message:error', function(updatesObj) {
-  cl('%cmessage:error', 'color:red', updatesObj);
+
+
+// Adding a Channel
+rtf.addChannel({
+  name: 'nextLiveMatches',
+  params: { matches: 10, live: true }
 });
 
-
-// rtf.addSubscription('nextLiveMatches').on('update', function(update) {
-  /*var updatesArray = update['updateMessage'];
-  _.each(updatesArray, function(matchesUpdatesItem) {
-    matchesTableController.processMatchesListUpdates(matchesUpdatesItem);
-  });*/
+// rtf.addChannel({
+//   name: 'testChannel',
+//   params: { live: true }
 // });
 
 
-// Works
-/*rtf.startUpdates();*/
-
-// Works
-rtf.startUpdates({
-  'nextLiveMatches' : { matches: 5, live: true },
-  // 'otherNewLiveMatches': { matches: 10, outcomes: false } 
-});
+// rtf.startUpdates();
 
 
-// rtf.subscribeToChannel('nextLiveMatches');
-// rtf.subscribeToChannel('nextLiveMatches', { matches: 10, live: true });
-// rtf.subscribeToChannel('otherMatches', { matches:5, outcomes: true });
+
+
 
 });

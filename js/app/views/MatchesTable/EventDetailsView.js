@@ -8,6 +8,11 @@ define([], function() {
 var EventDetails = Backbone.View.extend({
   initialize: function() {
     // console.log('%cnew EventDetails', 'color:#A2A2A2');
+    
+    this.model.on('change', function(eventItemModel) {
+      if ( !eventItemModel.hasChanged('index') )
+        this.$el.addClass('Changed');
+    }, this);
 
     this.model.on('change:tournamentName',
       this.handleChangedTournamentName, this);
@@ -46,6 +51,10 @@ var EventDetails = Backbone.View.extend({
     this.model.on('change:isLive', this.handleChangedIsLive, this);
 
     this.model.on('change:score', this.handleChangedScore, this);
+  },
+
+  destroy: function() {
+    this.off().remove();
   },
 
   handleChangedTournamentName: function() {

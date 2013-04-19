@@ -30,34 +30,19 @@ var MatchTableController = SKMObject.extend({
     // Handles a match, removed from matches talbe's event list
     this._matchesTableModel.on('removed:match',
       this._handleRemovedMatch, this);
+
+
+    this._matchesTableModel.on('changed:index',
+      this._handleChangeMatchIndex, this);
   },
 
-  /*createMatchesList: function(matchesList) {
-    console.log('createMatchesList', matchesList);
-  },
-
-  updateMatchesList: function(matchesList) {
-    console.log('updateMatchesList', matchesList);
-  },
-
-  deleteMatchesList: function(matchesList) {
-    console.log('deleteMatchesList', matchesList);
-  },*/
-
-  processUpdatesList: function(updatesList) {
-    cl('processUpdatesList', updatesList)
-  },
-
-  processMatchesListUpdates: function(updatesJson) {
-    var updateArr = updatesJson;//updatesJson['nextLiveMatches'];
-    var createItems, updateItems, deleteItems;
-    
-    if ( createItems = updateArr['create'] )
-      this._matchesTableModel.createMatchesList(createItems);
-    if ( updateItems = updateArr['update'] )
-      this._matchesTableModel.updateMatchesList(updateItems);
-    if ( deleteItems = updateArr['delete'] )
-      this._matchesTableModel.removeMatchesList(deleteItems);
+  processMatchesListUpdates: function(type, updatesJson) {
+    if ( type == 'create' )
+      this._matchesTableModel.createMatchesList(updatesJson);
+    if ( type == 'update' )
+      this._matchesTableModel.updateMatchesList(updatesJson);
+    if ( type == 'delete' )
+      this._matchesTableModel.removeMatchesList(updatesJson);
   },
 
   processMatchesInitialDump: function(initialJson) {
@@ -80,7 +65,7 @@ var MatchTableController = SKMObject.extend({
       view.setModel(model);
       view.renderChildren();
 
-      this._wrapperView.addRow(model.id, view);
+      this._wrapperView.addViewToRowList(model.id, view);
       this._wrapperView.renderRow(view);
     }, this);
   },
@@ -90,14 +75,27 @@ var MatchTableController = SKMObject.extend({
   },
 
   _handleCreatedMatch: function(matchModel) {
-
     var view = this._wrapperView.getNewRow();
     view.setModel(matchModel);
     view.render(matchModel.attributes);
     view.renderChildren();
     
-    this._wrapperView.addRow(matchModel.id, view);
+    this._wrapperView.addViewToRowList(matchModel.id, view);
     this._wrapperView.renderRow(view, matchModel.index);
+  },
+
+  _handleChangeMatchIndex: function(currentModel, newIdx) {
+    var newView = this._wrapperView.getNewRow();
+    newView.setModel(currentModel)
+      .render(currentModel.attributes)
+      .renderChildren();
+    
+    // remove old row view
+    this._wrapperView.removeRowById(currentModel.id);
+    // and render it
+    this._wrapperView.renderRow(newView, newIdx);
+    // add the newly created one
+    this._wrapperView.addViewToRowList(currentModel.id, newView);
   }
 });
 

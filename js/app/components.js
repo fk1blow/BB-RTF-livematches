@@ -36,7 +36,7 @@ Component.ui.TableView = Backbone.View.extend({
     return this._rowViews[id];
   },
 
-  addRow: function(id, view) {
+  addViewToRowList: function(id, view) {
     var list = this._rowViews;
     if ( id in list ) {
       console.log('%TableView.addRow :: view with id '
@@ -46,17 +46,18 @@ Component.ui.TableView = Backbone.View.extend({
     return this;
   },
 
-  removeRow: function(rowView) {
-    //
-  },
-
   removeRowById: function(id) {
     var row = null;
     if ( row = this._rowViews[id] ) {
       delete this._rowViews[id];
-      row.off().remove();
+      // row.off().remove();
+      row.destroy();
       row = null;
     }
+  },
+
+  getRowAtIndex: function(index) {
+    return this.$el.find(this.rowSelector).eq(index);
   },
 
   eachRow: function(cb, ctx) {

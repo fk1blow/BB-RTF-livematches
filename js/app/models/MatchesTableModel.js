@@ -48,10 +48,17 @@ var MatchesTableModel = Backbone.Model.extend({
    * @param  {Array} matchesArr list of matches to be updated
    */
   updateMatchesList: function(matchesArr) {
-    var eventItem = null;
+    var eventItem = null, newIdx = undefined, currentIdx;
     _.each(matchesArr, function(matchAttributes) {
-      if ( eventItem = eventsCollection.get(matchAttributes.eventId) )
+      if ( eventItem = eventsCollection.get(matchAttributes.eventId) ) {
+        newIdx = matchAttributes.index;
+        currentIdx = eventItem.get('index');
+        // if index has been updated
+        if ( newIdx != undefined && newIdx != currentIdx ) {
+          this.trigger('changed:index', eventItem, newIdx);
+        }
         eventItem.set(matchAttributes);
+      }
     }, this);
   },
   
