@@ -47,7 +47,7 @@ RTF.Config.XHR.url = 'http://' + window.location.host + '/rtfajax';
 
 var rtf = window.RTFApi = window.rtf = RTF.Api.getInstance();
 rtf.addUrlParameter('clientId', (new Date).getTime());
-rtf.addUrlParameter('jSessionId', 'C743D52D31C1723B82E7BAAA13D1B4D6');
+rtf.addUrlParameter('jSessionId', 'B0D74FFB1C8957E7FDA84E434436FD64');
 
 
 rtf.on('message:nextLiveMatches', function(updatesObj) {
@@ -58,6 +58,19 @@ rtf.on('message:nextLiveMatches', function(updatesObj) {
     matchesTableController.processMatchesListUpdates(type, json);
   });
 });
+
+
+// Feed json example
+/*var feed = {
+  update: [{
+    eventId: 0000000,
+
+    index: 4
+  }]
+
+  mtc.processMatchesListUpdates('update', feed.update)
+}*/
+
 
 rtf.on('message:testChannel', function(updatesObj) {
   console.log('______________________________________________________')
@@ -89,8 +102,6 @@ rtf.addChannel({
 
 
 // rtf.startUpdates();
-
-
 
 
 

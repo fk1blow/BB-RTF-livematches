@@ -31,9 +31,10 @@ var MatchTableController = SKMObject.extend({
     this._matchesTableModel.on('removed:match',
       this._handleRemovedMatch, this);
 
-
+    // triggered when an event index hax changed;
+    // will destroy the old row and add a new one
     this._matchesTableModel.on('changed:index',
-      this._handleChangeMatchIndex, this);
+      this._handleChangedMatchIndex, this);
   },
 
   processMatchesListUpdates: function(type, updatesJson) {
@@ -84,7 +85,11 @@ var MatchTableController = SKMObject.extend({
     this._wrapperView.renderRow(view, matchModel.index);
   },
 
-  _handleChangeMatchIndex: function(currentModel, newIdx) {
+  _handleChangedMatchIndex: function(currentModel, newIdx) {
+    cl('Changed index :: ', 
+      currentModel.get('eventId') + ' ' + 
+      currentModel.get('index') + ' ' + newIndex);
+
     var newView = this._wrapperView.getNewRow();
     newView.setModel(currentModel)
       .render(currentModel.attributes)
